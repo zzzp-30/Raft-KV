@@ -10,7 +10,7 @@ grpc::Status ServerRPCServiceImpl::isLeader(grpc::ServerContext*,
     }
     else
     {
-        printf("server已经被释放\n");
+        printf("server already destroyed\n");
     }
     return grpc::Status::OK;
 }
@@ -24,7 +24,7 @@ grpc::Status ServerRPCServiceImpl::execute(grpc::ServerContext*,
     }
     else
     {
-        printf("server已经被释放\n");
+        printf("server already destroyed\n");
     }
     return grpc::Status::OK;
 }

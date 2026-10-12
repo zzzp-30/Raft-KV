@@ -77,7 +77,7 @@ void Client::userLoop() {
     while(true)
     {
         //打印提示信息
-        std::cout << "输入put/get/del key value" << std::endl;
+        std::cout << "usage: put/get/del key value" << std::endl;
         //接收用户输入
         std::string op;
         std::string key;
@@ -91,7 +91,7 @@ void Client::userLoop() {
             std::cin >> key >> value;
         }
         else{
-            std::cerr << "[ERROR]:非法命令" ;
+            std::cerr << "[ERROR]:illegal command" ;
             continue;
         }
         // std::cout << "用户输入命令:" << op << ':' <<key <<':' <<value << std::endl;
@@ -118,7 +118,7 @@ void Client::userLoop() {
         }
         if(!res.success())
         {
-            std::cerr << "[ERROR]:服务端执行失败";
+            std::cerr << "[ERROR]:server execution failed";
             continue;
         }
         //返回响应给用户

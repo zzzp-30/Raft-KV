@@ -176,7 +176,7 @@ void RaftNode::OnHeartBeat(const raft::HeartBeatRequest* request,raft::HeartBeat
             }
             //持久化日志
             SaveLog();
-            std::cout << "追加成功,当前日志为:" << std::endl;
+            std::cout << "append ok, log:" << std::endl;
             for(const auto kS : log_)
             {
                 std::cout << "(" << kS.index << ',' << kS.term <<')' << kS.cmd << std::endl;
@@ -382,7 +382,7 @@ void RaftNode::OnRequestVote(const raft::VoteRequest* request,raft::VoteReply* r
         response->set_vote_granted(true);
         response->set_term(this->current_term_);
         ResetElectionTimerLocked();
-        printf("term=%d:投票给%d\n",this->current_term_,this->vote_for_);
+        printf("term=%d:vote for %d\n",this->current_term_,this->vote_for_);
     }else
     {
         response->set_vote_granted(false);
@@ -653,7 +653,7 @@ void RaftNode::OnElectionTimeout() {
         vote_for_ = me_;
         this->state_ = State::kCandidate;
         SaveState();
-        printf("term=%d:参与选举\n",this->current_term_);
+        printf("term=%d:start election\n",this->current_term_);
     }
     //广播要票请求
     BroadcastRequestVote();

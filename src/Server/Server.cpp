@@ -46,7 +46,7 @@ bool Server::Execute(const ser::executeRequest*request, ser::executeResponse*res
     {
         success = storage_->Put(key,"");
     }else{
-        std::cerr << "[ERROR]:输入命令不合法" ;
+        std::cerr << "[ERROR]:invalid command" ;
         success = false;
     }
     response->set_success(success);
