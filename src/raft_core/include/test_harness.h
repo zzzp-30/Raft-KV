@@ -64,6 +64,11 @@ public:
     // The node comes back with an empty log — it must catch up via InstallSnapshot.
     void RestartNode(int id);
 
+    // Simulate crash: shut down a node but PRESERVE its persisted state.
+    // On restart, the node recovers its log and term from disk.
+    // KV store is cleared (simulates volatile memory loss) and rebuilt from log.
+    void CrashRestartNode(int id);
+
     // Collect all inspectors for InvariantChecker.
     std::vector<RaftInspector*> AllInspectors();
 };

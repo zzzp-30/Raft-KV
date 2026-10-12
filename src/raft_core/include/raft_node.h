@@ -15,9 +15,10 @@
 #include <process.h>
 #endif
 #include "i_state_machine.h"
-#include "raft_rpc.pb.h"
+#include "raft_messages.h"
 #include "i_transport.h"
 #include "i_persister.h"
+#include "i_clock.h"
 #include "raft_inspector.h"
 #include"thread_pool.h"
 //节点基本信息
@@ -91,6 +92,12 @@ private:
     int last_snapshot_index_ = 0;
     int last_snapshot_term_ = 0;
     static constexpr int kSnapshotThreshold = 10;
+// Lease read
+    std::shared_ptr<IClock> clock_;
+    std::chrono::steady_clock::time_point lease_expire_;
+    int heartbeat_confirms_ = 0;
+    static constexpr int kLeaseDurationMs = 300;
+    int leader_id_ = -1;
 //并发资源
     std::unique_ptr<std::thread> ticker_thread_;
     std::unique_ptr<std::thread> thread_apply_loop_;
@@ -189,21 +196,23 @@ private:
     void ApplyLoop();
 //RPC响应封装
 public:
-    void OnHeartBeat(const raft::HeartBeatRequest* request,raft::HeartBeatReply* response);
-    void OnRequestVote(const raft::VoteRequest* request,raft::VoteReply* response);
-    void OnInstallSnapshot(const raft::InstallSnapshotRequest* request,raft::InstallSnapshotReply* response);
+    void OnHeartBeat(const raft_msg::HeartBeatRequest* request,raft_msg::HeartBeatReply* response);
+    void OnRequestVote(const raft_msg::VoteRequest* request,raft_msg::VoteReply* response);
+    void OnInstallSnapshot(const raft_msg::InstallSnapshotRequest* request,raft_msg::InstallSnapshotReply* response);
 public:
     RaftNode(int id,
              const std::map<int,Node>& kNodes,
              std::map<int,std::shared_ptr<ITransport>> transports,
              std::shared_ptr<IPersister> persister,
-             IStateMachine& kv_store)
+             IStateMachine& kv_store,
+             std::shared_ptr<IClock> clock = std::make_shared<SteadyClock>())
     : me_(id)
     , peers_(kNodes)
     , transports_(std::move(transports))
     , rng_(MakeRng(id))
     , persister_(std::move(persister))
-    , state_machine_(kv_store) {
+    , state_machine_(kv_store)
+    , clock_(std::move(clock)) {
         peers_.erase(id);
         transports_.erase(id);
         this->log_.push_back(Entry{0,0,""});
@@ -252,6 +261,14 @@ public:
     //ReadIndex: 确认leader身份(心跳多数确认), 等待状态机追上commit, 返回commit_index
     //return: 成功确认返回commit_index(>=0), 失败返回-1
     int ReadIndex(int timeout_ms = 1000);
+    //LeaseRead: 若leader租约未过期,直接返回commit_index;否则降级为ReadIndex
+    int LeaseRead(int timeout_ms = 1000);
+    //GetLeaderId: 返回已知leader id, 未知返回-1
+    int GetLeaderId() const
+    {
+        std::lock_guard<std::mutex> lck(mu_);
+        return leader_id_;
+    }
 
 // RaftInspector implementation (read-only access for testing)
 public:

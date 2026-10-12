@@ -31,20 +31,19 @@ TestHarness::TestHarness(int n) : node_count_(n) {
         auto* raw = tn->node.get();
         hub_->RegisterHandler(
             i,
-            [raw](const raft::HeartBeatRequest* req, raft::HeartBeatReply* resp) {
+            [raw](const raft_msg::HeartBeatRequest* req, raft_msg::HeartBeatReply* resp) {
                 raw->OnHeartBeat(req, resp);
             },
-            [raw](const raft::VoteRequest* req, raft::VoteReply* resp) {
+            [raw](const raft_msg::VoteRequest* req, raft_msg::VoteReply* resp) {
                 raw->OnRequestVote(req, resp);
             },
-            [raw](const raft::InstallSnapshotRequest* req, raft::InstallSnapshotReply* resp) {
+            [raw](const raft_msg::InstallSnapshotRequest* req, raft_msg::InstallSnapshotReply* resp) {
                 raw->OnInstallSnapshot(req, resp);
             });
 
         tn->start_thread = std::thread([raw]() {
             raw->Start();
         });
-
         nodes_.push_back(std::move(tn));
     }
 }
@@ -128,15 +127,48 @@ void TestHarness::RestartNode(int id) {
     auto* raw = tn->node.get();
     hub_->RegisterHandler(
         id,
-        [raw](const raft::HeartBeatRequest* req, raft::HeartBeatReply* resp) {
+        [raw](const raft_msg::HeartBeatRequest* req, raft_msg::HeartBeatReply* resp) {
             raw->OnHeartBeat(req, resp);
         },
-        [raw](const raft::VoteRequest* req, raft::VoteReply* resp) {
+        [raw](const raft_msg::VoteRequest* req, raft_msg::VoteReply* resp) {
             raw->OnRequestVote(req, resp);
         },
-        [raw](const raft::InstallSnapshotRequest* req, raft::InstallSnapshotReply* resp) {
+        [raw](const raft_msg::InstallSnapshotRequest* req, raft_msg::InstallSnapshotReply* resp) {
             raw->OnInstallSnapshot(req, resp);
         });
     // Restart.
+    tn->start_thread = std::thread([raw]() { raw->Start(); });
+}
+
+void TestHarness::CrashRestartNode(int id) {
+    auto& tn = nodes_[id];
+    tn->node->Shutdown();
+    if (tn->start_thread.joinable()) tn->start_thread.join();
+    // Clear KV store (volatile memory lost) but KEEP persister (disk survives).
+    tn->kv = std::make_unique<KVStore>();
+    std::map<int, Node> peers;
+    for (int j = 0; j < node_count_; ++j) {
+        peers[j] = Node("mem://" + std::to_string(j));
+    }
+    std::map<int, std::shared_ptr<ITransport>> transports;
+    for (int j = 0; j < node_count_; ++j) {
+        if (j != id) {
+            transports[j] = std::make_shared<MemTransport>(hub_, j);
+        }
+    }
+    tn->node = std::make_unique<RaftNode>(
+        id, peers, std::move(transports), tn->persister, *tn->kv);
+    auto* raw = tn->node.get();
+    hub_->RegisterHandler(
+        id,
+        [raw](const raft_msg::HeartBeatRequest* req, raft_msg::HeartBeatReply* resp) {
+            raw->OnHeartBeat(req, resp);
+        },
+        [raw](const raft_msg::VoteRequest* req, raft_msg::VoteReply* resp) {
+            raw->OnRequestVote(req, resp);
+        },
+        [raw](const raft_msg::InstallSnapshotRequest* req, raft_msg::InstallSnapshotReply* resp) {
+            raw->OnInstallSnapshot(req, resp);
+        });
     tn->start_thread = std::thread([raw]() { raw->Start(); });
 }

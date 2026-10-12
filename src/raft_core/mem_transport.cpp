@@ -1,7 +1,4 @@
 #include "mem_transport.h"
-#include "raft_rpc.pb.h"
-
-// ---- Hub ----------------------------------------------------------------
 
 void Hub::RegisterHandler(int id, HeartBeatHandler hb, VoteHandler vote,
                           InstallSnapshotHandler snap) {
@@ -34,76 +31,61 @@ bool Hub::IsReliable() const {
 }
 
 bool Hub::DeliverHeartBeat(int target_id,
-                           const raft::HeartBeatRequest& request,
-                           raft::HeartBeatReply* response) {
+                           const raft_msg::HeartBeatRequest& request,
+                           raft_msg::HeartBeatReply* response) {
     HeartBeatHandler handler;
     {
         std::lock_guard<std::mutex> lk(mu_);
-        if (!reliable_.load(std::memory_order_relaxed)) {
-            return false;
-        }
+        if (!reliable_.load(std::memory_order_relaxed)) return false;
         auto it = slots_.find(target_id);
-        if (it == slots_.end() || !it->second.connected) {
-            return false;
-        }
+        if (it == slots_.end() || !it->second.connected) return false;
         handler = it->second.on_heartbeat;
     }
-    // Invoke outside lock — handler may acquire the target RaftNode's mutex.
     handler(&request, response);
     return true;
 }
 
 bool Hub::DeliverVote(int target_id,
-                      const raft::VoteRequest& request,
-                      raft::VoteReply* response) {
+                      const raft_msg::VoteRequest& request,
+                      raft_msg::VoteReply* response) {
     VoteHandler handler;
     {
         std::lock_guard<std::mutex> lk(mu_);
-        if (!reliable_.load(std::memory_order_relaxed)) {
-            return false;
-        }
+        if (!reliable_.load(std::memory_order_relaxed)) return false;
         auto it = slots_.find(target_id);
-        if (it == slots_.end() || !it->second.connected) {
-            return false;
-        }
+        if (it == slots_.end() || !it->second.connected) return false;
         handler = it->second.on_vote;
     }
     handler(&request, response);
     return true;
 }
 
-// ---- MemTransport -------------------------------------------------------
-
-bool MemTransport::SendHeartBeat(const raft::HeartBeatRequest& request,
-                                 raft::HeartBeatReply* response) {
-    return hub_->DeliverHeartBeat(target_id_, request, response);
-}
-
-bool MemTransport::SendRequestVote(const raft::VoteRequest& request,
-                                   raft::VoteReply* response) {
-    return hub_->DeliverVote(target_id_, request, response);
-}
-
 bool Hub::DeliverInstallSnapshot(int target_id,
-                                 const raft::InstallSnapshotRequest& request,
-                                 raft::InstallSnapshotReply* response) {
+                                 const raft_msg::InstallSnapshotRequest& request,
+                                 raft_msg::InstallSnapshotReply* response) {
     InstallSnapshotHandler handler;
     {
         std::lock_guard<std::mutex> lk(mu_);
-        if (!reliable_.load(std::memory_order_relaxed)) {
-            return false;
-        }
+        if (!reliable_.load(std::memory_order_relaxed)) return false;
         auto it = slots_.find(target_id);
-        if (it == slots_.end() || !it->second.connected) {
-            return false;
-        }
+        if (it == slots_.end() || !it->second.connected) return false;
         handler = it->second.on_snapshot;
     }
     handler(&request, response);
     return true;
 }
 
-bool MemTransport::SendInstallSnapshot(const raft::InstallSnapshotRequest& request,
-                                       raft::InstallSnapshotReply* response) {
+bool MemTransport::SendHeartBeat(const raft_msg::HeartBeatRequest& request,
+                                 raft_msg::HeartBeatReply* response) {
+    return hub_->DeliverHeartBeat(target_id_, request, response);
+}
+
+bool MemTransport::SendRequestVote(const raft_msg::VoteRequest& request,
+                                   raft_msg::VoteReply* response) {
+    return hub_->DeliverVote(target_id_, request, response);
+}
+
+bool MemTransport::SendInstallSnapshot(const raft_msg::InstallSnapshotRequest& request,
+                                       raft_msg::InstallSnapshotReply* response) {
     return hub_->DeliverInstallSnapshot(target_id_, request, response);
 }

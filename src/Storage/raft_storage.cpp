@@ -2,6 +2,7 @@
 #include "raft_storage.h"
 #include <chrono>
 #include <future>
+#include <iostream>
 #include <sstream>
 
 bool RaftStorage::Put(const std::string&key,const std::string &value) {

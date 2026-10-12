@@ -11,22 +11,19 @@
 #include <memory>
 #include <string>
 
-//定义RPC客户端
 class RaftRPCClient : public ITransport
 {
 private:
-    std::unique_ptr<raft::RaftRPC::Stub>stub_;  //存根
+    std::unique_ptr<raft::RaftRPC::Stub>stub_;
 public:
     explicit RaftRPCClient(const std::string& address)
         : stub_(raft::RaftRPC::NewStub(
               grpc::CreateChannel(
                   address,
                   grpc::InsecureChannelCredentials()))) {}
-    bool SendHeartBeat(const raft::HeartBeatRequest &request,raft::HeartBeatReply*response) override;     
-    bool SendRequestVote(const raft::VoteRequest &request,raft::VoteReply*response) override;       
-    bool SendInstallSnapshot(const raft::InstallSnapshotRequest &request,raft::InstallSnapshotReply*response) override;       
-
+    bool SendHeartBeat(const raft_msg::HeartBeatRequest &request,raft_msg::HeartBeatReply*response) override;     
+    bool SendRequestVote(const raft_msg::VoteRequest &request,raft_msg::VoteReply*response) override;       
+    bool SendInstallSnapshot(const raft_msg::InstallSnapshotRequest &request,raft_msg::InstallSnapshotReply*response) override;       
 };
-
 
 #endif //!RAFTRPCCLIENT_H

@@ -10,20 +10,22 @@ target_link_libraries(raft_example
         kv_store
 )
 
-add_executable(server_test
-    server_test.cpp
-)
-target_link_libraries(server_test
-    PRIVATE
-        Server
-)
-add_executable(client_test
-    client_test.cpp
-)
-target_link_libraries(client_test
-    PRIVATE
-        Client
-)
+if(BUILD_RAFT_GRPC)
+    add_executable(server_test
+        server_test.cpp
+    )
+    target_link_libraries(server_test
+        PRIVATE
+            Server
+    )
+    add_executable(client_test
+        client_test.cpp
+    )
+    target_link_libraries(client_test
+        PRIVATE
+            Client
+    )
+endif()
 
 add_executable(thread_pool_test
     thread_pool_test.cpp
