@@ -10,6 +10,9 @@
 #include <map>
 #include<string>
 #include <mutex>
+#ifdef _WIN32
+#include <process.h>
+#endif
 #include "kv_store.h"
 #include "raft_rpc.pb.h"
 #include"raft_rpc_client.h"
@@ -100,7 +103,11 @@ private:
         rd(),
         rd(),
         static_cast<unsigned int>(node_id),
+#ifdef _WIN32
+        static_cast<unsigned int>(::_getpid()),
+#else
         static_cast<unsigned int>(::getpid()),
+#endif
     };
 
     return std::mt19937_64(seed);

@@ -6,3 +6,4 @@ data/
 bin/
 lib/
 .vscode/
+do_build.bat

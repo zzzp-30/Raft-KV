@@ -5,7 +5,12 @@
 #include <mutex>
 #include <string>
 #include <sstream>
+#include <cstdio>
+#ifdef _WIN32
+#include <io.h>
+#endif
 Persister::Persister(int id) {
+    std::filesystem::create_directories("./data");
     file_raft_state_ = kPrefixRaftState + std::to_string(id) + ".txt";
     file_raft_log_ = kPrefixRaftLog + std::to_string(id) + ".txt";
 }
@@ -20,6 +25,9 @@ bool Persister::SaveRaftState(const std::string &data) {
     }
     ofs << data;
     ofs.close();
+#ifdef _WIN32
+    std::remove(file_raft_state_.c_str());
+#endif
     rename((file_raft_state_+".tmp").c_str(),file_raft_state_.c_str());
     return true;
 }
@@ -54,6 +62,9 @@ bool Persister::SaveRaftLog(const std::string&data) {
     }
     ofs << data;
     ofs.close();
+#ifdef _WIN32
+    std::remove(file_raft_log_.c_str());
+#endif
     rename((file_raft_log_+".tmp").c_str(),file_raft_log_.c_str());
     return true;
 }
