@@ -22,6 +22,8 @@ public:
     //获取键对应的值,value=''表示该键不存在
     //return : 成功获取返回true,获取失败返回false
     bool Get(const std::string&key,std::string&value)override;
+    //线性一致读: 先确认leader身份,再从状态机读取
+    bool ReadIndex(const std::string&key,std::string&value);
 
 };
 

@@ -10,13 +10,15 @@
 #include <map>
 #include<string>
 #include <mutex>
+#include <atomic>
 #ifdef _WIN32
 #include <process.h>
 #endif
-#include "kv_store.h"
+#include "i_state_machine.h"
 #include "raft_rpc.pb.h"
-#include"raft_rpc_client.h"
-#include"persister.h"
+#include "i_transport.h"
+#include "i_persister.h"
+#include "raft_inspector.h"
 #include"thread_pool.h"
 //节点基本信息
 struct Node{
@@ -36,7 +38,7 @@ struct Entry
     CMD cmd;    //命令
 };
 //raft节点定义
-class RaftNode{
+class RaftNode : public RaftInspector{
 private:
     using MyPromise = std::promise<bool>;
     using MyFuture = std::future<bool>;
@@ -51,8 +53,8 @@ private:
 //通信相关
     //除本节点外其他节点信息
     std::map<int,Node> peers_;
-    //除本节点外其他RPC客户端
-    std::map<int,std::shared_ptr<RaftRPCClient>> clis_;
+    //传输层(每个peer一个)
+    std::map<int,std::shared_ptr<ITransport>> transports_;
 //选举信息相关
     //本节点id
     int me_;    
@@ -67,6 +69,7 @@ private:
 //定时资源
     mutable std::mutex mu_;
     std::condition_variable cond_;
+    std::condition_variable apply_cv_;  // notified when entries are applied to state machine
     //超时时间点
     std::chrono::steady_clock::time_point deadline_;    
 
@@ -84,14 +87,20 @@ private:
     std::map<int,int>next_indexs_;
     //保存已经复制给每个节点的最后一条记录序号
     std::map<int,int>match_indexs_;
+    //快照点:最后快照的日志序号和任期
+    int last_snapshot_index_ = 0;
+    int last_snapshot_term_ = 0;
+    static constexpr int kSnapshotThreshold = 10;
 //并发资源
+    std::unique_ptr<std::thread> ticker_thread_;
     std::unique_ptr<std::thread> thread_apply_loop_;
     std::unique_ptr<ThreadPool> thread_pool_;
+    std::atomic<bool> running_{true};
 private:
-    Persister persis_;  //持久化模块
+    std::shared_ptr<IPersister> persister_;  //持久化模块
 private:
     std::map<std::pair<int,int>,std::shared_ptr<std::promise<bool>>> pendding_map_;   //外部请求等待
-    KVStore &state_machine_;
+    IStateMachine& state_machine_;
 private:
     //初始化随机数发生器
     std::mt19937_64 MakeRng(int node_id) {
@@ -116,11 +125,13 @@ private:
 private:
     //日志相关状态初始化
     void LogInit();
+    //将Raft日志序号映射到log_数组下标(快照压缩后log_[0]为sentinel)
+    int LogPos(int raft_index) const { return raft_index - last_snapshot_index_; }
     int  GetLastIndex()
     {
         if(log_.size()<=1)
         {
-            return 0;
+            return last_snapshot_index_;
         }
         return log_.back().index;
     }
@@ -128,7 +139,7 @@ private:
     {
         if(log_.size() <= 1)
         {
-            return 0;
+            return last_snapshot_term_;
         }
         return log_.back().term;
     }
@@ -154,6 +165,10 @@ private:
     bool SaveLog();
     //加载日志
     bool LoadLog();
+    //加载快照(启动时恢复状态机+sentinel日志)
+    bool LoadSnapshot();
+    //创建快照:序列化状态机,持久化,压缩日志
+    void MaybeCreateSnapshot();
     //提交日志
     bool CommitLog(int index);
     //检查,更新commit_index
@@ -166,7 +181,8 @@ private:
     void BroadcastRequestVote();
     void SendRequestVote(int id,const int kTermSnapshot);
     void BroadcastHeartBeat();
-    void SendHeartBeat(int id,const int kTermSnapshot);       
+    void SendHeartBeat(int id,const int kTermSnapshot);
+    void SendSnapshot(int id, const int kTermSnapshot);
 private:
     // void resetHeartBeatTimer();
     //应用日志到状态机
@@ -175,20 +191,41 @@ private:
 public:
     void OnHeartBeat(const raft::HeartBeatRequest* request,raft::HeartBeatReply* response);
     void OnRequestVote(const raft::VoteRequest* request,raft::VoteReply* response);
+    void OnInstallSnapshot(const raft::InstallSnapshotRequest* request,raft::InstallSnapshotReply* response);
 public:
-    RaftNode(int id,const std::map<int,Node> kNodes,KVStore&kv_store)
-    :me_(id),peers_(kNodes),rng_(MakeRng(id)),persis_(id),state_machine_(kv_store){
+    RaftNode(int id,
+             const std::map<int,Node>& kNodes,
+             std::map<int,std::shared_ptr<ITransport>> transports,
+             std::shared_ptr<IPersister> persister,
+             IStateMachine& kv_store)
+    : me_(id)
+    , peers_(kNodes)
+    , transports_(std::move(transports))
+    , rng_(MakeRng(id))
+    , persister_(std::move(persister))
+    , state_machine_(kv_store) {
         peers_.erase(id);
+        transports_.erase(id);
         this->log_.push_back(Entry{0,0,""});
         thread_pool_ = std::make_unique<ThreadPool>(3);
     }
     ~RaftNode(){
-        //回收线程
-        if(thread_apply_loop_->joinable())
-            thread_apply_loop_->join();
+        // If Shutdown() wasn't called explicitly, do it now.
+        if(running_.load(std::memory_order_relaxed))
+            Shutdown();
     }
     //开启raft节点
     void Start();
+    //优雅关闭: 停止 Ticker, 排空线程池, 停止 ApplyLoop
+    void Shutdown() {
+        running_.store(false, std::memory_order_relaxed);
+        cond_.notify_all();
+        if(ticker_thread_ && ticker_thread_->joinable())
+            ticker_thread_->join();
+        thread_pool_.reset();
+        if(thread_apply_loop_ && thread_apply_loop_->joinable())
+            thread_apply_loop_->join();
+    }
 private:
     //定时器函数
     void Ticker();
@@ -211,6 +248,43 @@ public:
     {
         std::lock_guard<std::mutex> lck(mu_);
         return this->state_ == State::kLeader;
+    }
+    //ReadIndex: 确认leader身份(心跳多数确认), 等待状态机追上commit, 返回commit_index
+    //return: 成功确认返回commit_index(>=0), 失败返回-1
+    int ReadIndex(int timeout_ms = 1000);
+
+// RaftInspector implementation (read-only access for testing)
+public:
+    int InspectorId() const override { return me_; }
+    int InspectorTerm() const override
+    {
+        std::lock_guard<std::mutex> lck(mu_);
+        return current_term_;
+    }
+    bool InspectorIsLeader() const override
+    {
+        std::lock_guard<std::mutex> lck(mu_);
+        return state_ == State::kLeader;
+    }
+    bool InspectorIsCandidate() const override
+    {
+        std::lock_guard<std::mutex> lck(mu_);
+        return state_ == State::kCandidate;
+    }
+    int InspectorCommitIndex() const override
+    {
+        std::lock_guard<std::mutex> lck(mu_);
+        return commited_index_;
+    }
+    int InspectorLastApplied() const override
+    {
+        std::lock_guard<std::mutex> lck(mu_);
+        return last_applied_;
+    }
+    std::vector<Entry> InspectorLog() const override
+    {
+        std::lock_guard<std::mutex> lck(mu_);
+        return log_;
     }
 };
 

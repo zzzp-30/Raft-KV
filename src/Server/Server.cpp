@@ -6,6 +6,8 @@
 #include"server_rpc.h"
 #include "raft_storage.h"
 #include "raft_node.h"
+#include "persister.h"
+#include "raft_rpc_client.h"
 Server::Server(int me,const std::string&address,std::map<int,std::string>peers):me_(me),address_(address),peers_(peers) {
 
 
@@ -68,7 +70,19 @@ void Server::Start() {
     {
         nodes[id] = Node(addr);
     }
-    raft_node_ = new RaftNode (me_,nodes,*kv_store_);
+
+    //构建传输层:每个peer一个gRPC客户端
+    std::map<int,std::shared_ptr<ITransport>> transports;
+    for(const auto[id,node]:nodes)
+    {
+        if(id == me_) continue;
+        transports[id] = std::make_shared<RaftRPCClient>(node.address);
+    }
+
+    //构建持久化模块
+    auto persister = std::make_shared<Persister>(me_);
+
+    raft_node_ = new RaftNode(me_, nodes, std::move(transports), std::move(persister), *kv_store_);
 
     storage_ = new RaftStorage(*raft_node_,*kv_store_); 
     //启动RPC服务

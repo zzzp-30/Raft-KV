@@ -4,6 +4,10 @@ add_library(raft_core STATIC
     raft_rpc_client.cpp
     raft_rpc.cpp
     persister.cpp
+    mem_transport.cpp
+    fault_injector.cpp
+    invariant_checker.cpp
+    test_harness.cpp
 )
 
 target_include_directories(raft_core

@@ -4,6 +4,7 @@
 #include <mutex>
 #include<string>
 #include <filesystem>
+#include "i_persister.h"
 //定义Raft的持久化模块
 /*
     保存与恢复
@@ -13,21 +14,25 @@
 从raftlog中读取日志
 
 */
-class Persister
+class Persister : public IPersister
 {
 private:
     std::mutex mtx_;
     const std::string kPrefixRaftState = "./data/raft-state";
     const std::string kPrefixRaftLog = "./data/raft-log";
+    const std::string kPrefixSnapshot = "./data/raft-snapshot";
     std::string file_raft_state_;
     std::string file_raft_log_;
+    std::string file_snapshot_;
 public:
     //根据id设置文件名
     Persister(int id);
-    bool SaveRaftState(const std::string &data);
-    bool ReadRaftState(std::string&data);
-    bool SaveRaftLog(const std::string&data);
-    bool ReadRaftLog(std::string&data);
+    bool SaveRaftState(const std::string &data) override;
+    bool ReadRaftState(std::string&data) override;
+    bool SaveRaftLog(const std::string&data) override;
+    bool ReadRaftLog(std::string&data) override;
+    bool SaveSnapshot(const std::string&data) override;
+    bool ReadSnapshot(std::string&data) override;
 };
 
 

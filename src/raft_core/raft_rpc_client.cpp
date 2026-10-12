@@ -23,3 +23,12 @@ bool RaftRPCClient::SendRequestVote(const raft::VoteRequest &request,raft::VoteR
     }
     return true;
 }
+bool RaftRPCClient::SendInstallSnapshot(const raft::InstallSnapshotRequest &request,raft::InstallSnapshotReply*response){
+    grpc::ClientContext context;
+    context.set_deadline(std::chrono::system_clock::now()+std::chrono::seconds(10));
+    const grpc::Status kStatus = stub_->OnInstallSnapshot(&context,request,response);
+    if (!kStatus.ok()) {
+        return false;
+    }
+    return true;
+}

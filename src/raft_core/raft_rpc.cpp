@@ -43,3 +43,10 @@ grpc::Status RaftRPCServiceImpl::OnRequestVote(grpc::ServerContext*,
     raft_node_.OnRequestVote(request,response);
     return grpc::Status::OK;
 }
+
+grpc::Status RaftRPCServiceImpl::OnInstallSnapshot(grpc::ServerContext*,
+                          const raft::InstallSnapshotRequest* request,
+                          raft::InstallSnapshotReply* response) {
+    raft_node_.OnInstallSnapshot(request,response);
+    return grpc::Status::OK;
+}

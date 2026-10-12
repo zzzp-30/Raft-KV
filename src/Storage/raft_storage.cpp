@@ -35,3 +35,11 @@ bool RaftStorage::Get(const std::string&key,std::string&value) {
         std::cout << "[SUCCESS]:get " << key << ' ' << value << std::endl;
     return true;
 }
+
+bool RaftStorage::ReadIndex(const std::string&key,std::string&value) {
+    //先通过Raft ReadIndex确认leader身份并等待状态机追上
+    int commit = raft_node_.ReadIndex();
+    if(commit < 0) return false;
+    //leader已确认,从状态机读取
+    return state_machine_.Get(key,value);
+}

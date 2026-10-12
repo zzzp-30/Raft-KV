@@ -25,6 +25,7 @@ namespace raft {
 static const char* RaftRPC_method_names[] = {
   "/raft.RaftRPC/OnHeartBeat",
   "/raft.RaftRPC/OnRequestVote",
+  "/raft.RaftRPC/OnInstallSnapshot",
 };
 
 std::unique_ptr< RaftRPC::Stub> RaftRPC::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -36,6 +37,7 @@ std::unique_ptr< RaftRPC::Stub> RaftRPC::NewStub(const std::shared_ptr< ::grpc::
 RaftRPC::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options)
   : channel_(channel), rpcmethod_OnHeartBeat_(RaftRPC_method_names[0], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_OnRequestVote_(RaftRPC_method_names[1], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_OnInstallSnapshot_(RaftRPC_method_names[2], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
 ::grpc::Status RaftRPC::Stub::OnHeartBeat(::grpc::ClientContext* context, const ::raft::HeartBeatRequest& request, ::raft::HeartBeatReply* response) {
@@ -84,6 +86,29 @@ void RaftRPC::Stub::async::OnRequestVote(::grpc::ClientContext* context, const :
   return result;
 }
 
+::grpc::Status RaftRPC::Stub::OnInstallSnapshot(::grpc::ClientContext* context, const ::raft::InstallSnapshotRequest& request, ::raft::InstallSnapshotReply* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::raft::InstallSnapshotRequest, ::raft::InstallSnapshotReply, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_OnInstallSnapshot_, context, request, response);
+}
+
+void RaftRPC::Stub::async::OnInstallSnapshot(::grpc::ClientContext* context, const ::raft::InstallSnapshotRequest* request, ::raft::InstallSnapshotReply* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::raft::InstallSnapshotRequest, ::raft::InstallSnapshotReply, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_OnInstallSnapshot_, context, request, response, std::move(f));
+}
+
+void RaftRPC::Stub::async::OnInstallSnapshot(::grpc::ClientContext* context, const ::raft::InstallSnapshotRequest* request, ::raft::InstallSnapshotReply* response, ::grpc::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_OnInstallSnapshot_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::raft::InstallSnapshotReply>* RaftRPC::Stub::PrepareAsyncOnInstallSnapshotRaw(::grpc::ClientContext* context, const ::raft::InstallSnapshotRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::raft::InstallSnapshotReply, ::raft::InstallSnapshotRequest, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_OnInstallSnapshot_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::raft::InstallSnapshotReply>* RaftRPC::Stub::AsyncOnInstallSnapshotRaw(::grpc::ClientContext* context, const ::raft::InstallSnapshotRequest& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncOnInstallSnapshotRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
 RaftRPC::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       RaftRPC_method_names[0],
@@ -105,6 +130,16 @@ RaftRPC::Service::Service() {
              ::raft::VoteReply* resp) {
                return service->OnRequestVote(ctx, req, resp);
              }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      RaftRPC_method_names[2],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< RaftRPC::Service, ::raft::InstallSnapshotRequest, ::raft::InstallSnapshotReply, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](RaftRPC::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::raft::InstallSnapshotRequest* req,
+             ::raft::InstallSnapshotReply* resp) {
+               return service->OnInstallSnapshot(ctx, req, resp);
+             }, this)));
 }
 
 RaftRPC::Service::~Service() {
@@ -118,6 +153,13 @@ RaftRPC::Service::~Service() {
 }
 
 ::grpc::Status RaftRPC::Service::OnRequestVote(::grpc::ServerContext* context, const ::raft::VoteRequest* request, ::raft::VoteReply* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status RaftRPC::Service::OnInstallSnapshot(::grpc::ServerContext* context, const ::raft::InstallSnapshotRequest* request, ::raft::InstallSnapshotReply* response) {
   (void) context;
   (void) request;
   (void) response;
