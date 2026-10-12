@@ -2,8 +2,6 @@
 #include <cassert>
 #include <chrono>
 #include <cstdlib>
-#include "kv_store.h"
-#include "raft_rpc_client.h"
 #include "raft_rpc.pb.h"
 #include <iostream>
 #include <memory>
@@ -24,18 +22,14 @@ void RaftNode::Start() {
         commited_index_ = 0;
         last_applied_ = 0;
         //加载持久化信息
+        LoadSnapshot();
         LoadState();
         LoadLog();
-        //构建连接
-        for(const auto[id,node]:peers_)
-        {
-            clis_[id] = std::make_unique<RaftRPCClient>(node.address);
-        }
         //状态机应用
         thread_apply_loop_ = std::make_unique<std::thread>(&RaftNode::ApplyLoop,this); 
     }
     //启动定时线程
-    Ticker();
+    ticker_thread_ = std::make_unique<std::thread>(&RaftNode::Ticker,this);
     // while(true)
     // {
     //     switch (state_) {
@@ -154,7 +148,13 @@ void RaftNode::OnHeartBeat(const raft::HeartBeatRequest* request,raft::HeartBeat
     //如果follower没有prevIndex日志,或者preIndex日志处不匹配,不做处理,响应false
     int prev_index = request->prev_index();
     
-    if(this->GetLastIndex() < prev_index || this->log_.at(prev_index).term != request->prev_term())
+    //如果prev_index在快照点之前,无法验证(leader应发送快照而非心跳)
+    if(prev_index < last_snapshot_index_)
+    {
+        response->set_success(false);
+        return;
+    }
+    if(this->GetLastIndex() < prev_index || this->log_[LogPos(prev_index)].term != request->prev_term())
     {
         response->set_success(false);
     }else //从节点匹配成功
@@ -163,11 +163,11 @@ void RaftNode::OnHeartBeat(const raft::HeartBeatRequest* request,raft::HeartBeat
         if(request->entries_size()>0)
         {
             //删除匹配点之后的日志
-            auto begin = this->log_.begin()+prev_index+1;
-            if(begin>=this->log_.begin() && begin < this->log_.end())
-                this->log_.erase(begin,this->log_.end());
-            else
-                std::cerr << "[ERROR]:log index overflow";        
+            int pos = LogPos(prev_index) + 1;
+            if(pos > 0 && pos < (int)this->log_.size())
+                this->log_.erase(this->log_.begin()+pos,this->log_.end());
+            else if(pos <= 0)
+                std::cerr << "[ERROR]:log index overflow";
             //追加新日志
             auto entries = request->entries();
             for(const auto kE:entries)
@@ -222,7 +222,7 @@ void RaftNode::SendRequestVote(int id,const int kTermSnapshot)
     request.set_last_log_term(GetLastTerm());
     request.set_last_log_index(GetLastIndex());
     lck.unlock();
-    bool res = clis_[id]->SendRequestVote(request,&response);
+    bool res = transports_[id]->SendRequestVote(request,&response);
     if(!res)    return;
     // printf("Vote:id=%d,term=%d\n",id,request.term());
     // printf("VoteRes:granted=%d,term=%d\n",response->vote_granted(),response->term());
@@ -283,17 +283,24 @@ void RaftNode::SendHeartBeat(int id,const int kTermSnapshot)
     {
         return;
     }
+    //如果follower落后于快照点,发送快照而非心跳
+    if(this->next_indexs_[id] <= this->last_snapshot_index_)
+    {
+        lck1.unlock();
+        SendSnapshot(id, kTermSnapshot);
+        return;
+    }
     request.set_leader_id(me_);
     request.set_term(current_term_);
     request.set_commited_index(this->commited_index_);
     int prev_index = this->next_indexs_[id]-1;
     request.set_prev_index(prev_index);
-    request.set_prev_term(this->log_[prev_index].term);
+    request.set_prev_term(this->log_[LogPos(prev_index)].term);
     //还有记录未发送,打包发送
 
     if(GetLastIndex() >= this->next_indexs_[id])
     {
-        for(auto it = this->log_.begin()+prev_index+1;it!=this->log_.end();it++)
+        for(auto it = this->log_.begin()+LogPos(prev_index)+1;it!=this->log_.end();it++)
         {
             auto e = request.add_entries();
             e->set_index(it->index);
@@ -304,7 +311,7 @@ void RaftNode::SendHeartBeat(int id,const int kTermSnapshot)
 
     lck1.unlock();
     //数据传输
-    bool res = clis_[id]->SendHeartBeat(request,&response);
+    bool res = transports_[id]->SendHeartBeat(request,&response);
     if(!res)    return;
     lck1.lock();
     //接收并解析响应
@@ -408,11 +415,11 @@ void RaftNode::CliLike() {
 bool RaftNode::SaveState() {
     std::string data;
     data = std::to_string(current_term_) + ":" + std::to_string(vote_for_);
-    return persis_.SaveRaftState(data);
+    return persister_->SaveRaftState(data);
 }
 bool RaftNode::LoadState() {
     std::string data;
-    bool res = persis_.ReadRaftState(data);
+    bool res = persister_->ReadRaftState(data);
     if(res == false)
         return false;
     auto it = data.find(":");
@@ -430,11 +437,11 @@ bool RaftNode::SaveLog() {
     {
         ss << log_[i].index << ":" << log_[i].term << ":" << log_[i].cmd << "\n";
     }
-    return persis_.SaveRaftLog(ss.str());
+    return persister_->SaveRaftLog(ss.str());
 }
 bool RaftNode::LoadLog() {
     std::string data;
-    persis_.ReadRaftLog(data);
+    persister_->ReadRaftLog(data);
     std::stringstream ss(std::move(data));
     std::string line;
     while(std::getline(ss,line))
@@ -457,7 +464,7 @@ bool RaftNode::CommitLog(int index)
     {
         ss << log_[i].index << ":" << log_[i].term << ":" << log_[i].cmd << "\n";
     }
-    return persis_.SaveRaftLog(ss.str());
+    return persister_->SaveRaftLog(ss.str());
 }
 bool RaftNode::UpdateCommit()
 {
@@ -496,7 +503,8 @@ bool RaftNode::UpdateCommit()
         to_commit_index = mid-1;
     }   
     //保证commitindex有改变,且提交日志为本任期,再进行提交
-    if(to_commit_index!=commited_index_ && this->log_[to_commit_index].term == this->current_term_){
+    if(to_commit_index!=commited_index_ && to_commit_index > last_snapshot_index_
+       && this->log_[LogPos(to_commit_index)].term == this->current_term_){
         // //提交日志,更新commit
         // if(CommitLog(to_commit_index))
         // {
@@ -529,14 +537,19 @@ RaftNode::MyFuture RaftNode::Propose(const std::string&cmd)
 }
 void RaftNode::ApplyLoop()
 {
-    while(true)
+    while(running_.load(std::memory_order_relaxed))
     {
         {
             std::lock_guard<std::mutex> lck(mu_);
             while(last_applied_ < commited_index_)
             {
                 int i = last_applied_+1;
-                Entry &e = this->log_[i];
+                //跳过快照点之前的条目(已在状态机中)
+                if(i <= last_snapshot_index_) {
+                    last_applied_ = last_snapshot_index_;
+                    continue;
+                }
+                Entry &e = this->log_[LogPos(i)];
                 //解析命令
                 std::istringstream ss(e.cmd);
                 std::string op;
@@ -564,9 +577,11 @@ void RaftNode::ApplyLoop()
                     this->pendding_map_.erase(std::make_pair(e.index,e.term));
                 }
                 last_applied_++;
+                apply_cv_.notify_all();
             }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        MaybeCreateSnapshot();
     }
 }
 
@@ -581,11 +596,12 @@ void RaftNode::Ticker() {
         }
     }
     std::unique_lock<std::mutex> lck(mu_);
-    while(true)
+    while(running_.load(std::memory_order_relaxed))
     {
         //等待超时或唤醒
         cond_.wait_until(lck,deadline_);
-        //如果是超时
+        if(!running_.load(std::memory_order_relaxed)) break;
+        //发生超时
         auto now = std::chrono::steady_clock::now();
         if(now>=deadline_)
         {
@@ -644,4 +660,199 @@ void RaftNode::OnElectionTimeout() {
 }
 void RaftNode::OnHeartBeatTimeout() {
     BroadcastHeartBeat();
+}
+
+int RaftNode::ReadIndex(int timeout_ms) {
+    int recorded_commit;
+    int term_snapshot;
+    {
+        std::lock_guard<std::mutex> lck(mu_);
+        if (state_ != State::kLeader) return -1;
+        term_snapshot = current_term_;
+        recorded_commit = commited_index_;
+    }
+    // Send heartbeats to all peers, count confirmations.
+    std::atomic<int> confirmations{1};  // count self
+    std::atomic<bool> lost{false};
+    for (const auto& [id, _] : peers_) {
+        thread_pool_->AddTask([this, id, term_snapshot, &confirmations, &lost]() {
+            raft::HeartBeatRequest req;
+            raft::HeartBeatReply resp;
+            {
+                std::lock_guard<std::mutex> lck(mu_);
+                if (state_ != State::kLeader || current_term_ != term_snapshot) {
+                    lost.store(true);
+                    return;
+                }
+                req.set_leader_id(me_);
+                req.set_term(current_term_);
+                req.set_commited_index(commited_index_);
+                int prev = next_indexs_[id] - 1;
+                if (prev < last_snapshot_index_) {
+                    lost.store(true);
+                    return;
+                }
+                req.set_prev_index(prev);
+                req.set_prev_term(log_[LogPos(prev)].term);
+            }
+            bool ok = transports_[id]->SendHeartBeat(req, &resp);
+            if (!ok) return;
+            std::lock_guard<std::mutex> lck(mu_);
+            if (state_ != State::kLeader || current_term_ != term_snapshot) {
+                lost.store(true);
+                return;
+            }
+            if (resp.term() > current_term_) {
+                lost.store(true);
+                return;
+            }
+            if (resp.success()) {
+                confirmations.fetch_add(1);
+            }
+        });
+    }
+    // Wait for majority or timeout.
+    int majority = static_cast<int>((peers_.size() + 1) / 2) + 1;
+    auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout_ms);
+    while (std::chrono::steady_clock::now() < deadline) {
+        if (lost.load()) return -1;
+        if (confirmations.load() >= majority) break;
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+    if (confirmations.load() < majority || lost.load()) return -1;
+    // Wait for state machine to apply up to recorded commit.
+    {
+        std::unique_lock<std::mutex> lck(mu_);
+        apply_cv_.wait_for(lck, std::chrono::milliseconds(timeout_ms), [&] {
+            return last_applied_ >= recorded_commit ||
+                   state_ != State::kLeader;
+        });
+        if (state_ != State::kLeader || last_applied_ < recorded_commit) return -1;
+        return recorded_commit;
+    }
+}
+
+bool RaftNode::LoadSnapshot() {
+    std::string data;
+    if (!persister_->ReadSnapshot(data)) return false;
+    // format: "last_snapshot_index:last_snapshot_term\n<sm snapshot data>"
+    auto nl = data.find('\n');
+    if (nl == std::string::npos) return false;
+    std::string header = data.substr(0, nl);
+    auto colon = header.find(':');
+    if (colon == std::string::npos) return false;
+    last_snapshot_index_ = std::stoi(header.substr(0, colon));
+    last_snapshot_term_ = std::stoi(header.substr(colon + 1));
+    std::string sm_data = data.substr(nl + 1);
+    state_machine_.ApplySnapshot(sm_data);
+    //替换log_为sentinel
+    log_.clear();
+    log_.push_back(Entry{last_snapshot_index_, last_snapshot_term_, ""});
+    //推进apply和commit指针
+    if (last_applied_ < last_snapshot_index_) last_applied_ = last_snapshot_index_;
+    if (commited_index_ < last_snapshot_index_) commited_index_ = last_snapshot_index_;
+    printf("loadSnapshot: index=%d term=%d\n", last_snapshot_index_, last_snapshot_term_);
+    return true;
+}
+
+void RaftNode::MaybeCreateSnapshot() {
+    std::lock_guard<std::mutex> lck(mu_);
+    if ((int)log_.size() - 1 < kSnapshotThreshold) return;
+    if (last_applied_ <= last_snapshot_index_) return;
+    //序列化状态机
+    std::string sm_data;
+    state_machine_.CreateSnapshot(sm_data);
+    //组装快照: header + sm数据
+    std::string snapshot;
+    snapshot = std::to_string(last_applied_) + ":" +
+               std::to_string(log_[LogPos(last_applied_)].term) + "\n" +
+               sm_data;
+    if (!persister_->SaveSnapshot(snapshot)) return;
+    //压缩日志:删除last_applied_及之前的条目,插入新sentinel
+    int snap_idx = last_applied_;
+    int snap_term = log_[LogPos(snap_idx)].term;
+    int old_pos = LogPos(snap_idx);
+    log_.erase(log_.begin(), log_.begin() + old_pos + 1);
+    log_.insert(log_.begin(), Entry{snap_idx, snap_term, ""});
+    last_snapshot_index_ = snap_idx;
+    last_snapshot_term_ = snap_term;
+    printf("snapshot created: index=%d term=%d log_size=%d\n",
+           snap_idx, snap_term, (int)log_.size());
+}
+
+void RaftNode::SendSnapshot(int id, const int kTermSnapshot) {
+    raft::InstallSnapshotRequest request;
+    raft::InstallSnapshotReply response;
+    {
+        std::lock_guard<std::mutex> lck(mu_);
+        if (!(state_ == State::kLeader && current_term_ == kTermSnapshot)) return;
+        request.set_term(current_term_);
+        request.set_leader_id(me_);
+        request.set_last_snapshot_index(last_snapshot_index_);
+        request.set_last_snapshot_term(last_snapshot_term_);
+        //读取持久化快照数据,去掉header行
+        std::string full;
+        if (!persister_->ReadSnapshot(full)) return;
+        auto nl = full.find('\n');
+        if (nl != std::string::npos)
+            request.set_snapshot_data(full.substr(nl + 1));
+    }
+    bool ok = transports_[id]->SendInstallSnapshot(request, &response);
+    if (!ok) return;
+    std::lock_guard<std::mutex> lck(mu_);
+    if (!(state_ == State::kLeader && current_term_ == kTermSnapshot)) return;
+    if (response.term() > current_term_) {
+        current_term_ = response.term();
+        vote_for_ = -1;
+        state_ = State::kFollower;
+        SaveState();
+        ResetElectionTimerLocked();
+        return;
+    }
+    if (response.success()) {
+        next_indexs_[id] = last_snapshot_index_ + 1;
+        match_indexs_[id] = last_snapshot_index_;
+    }
+}
+
+void RaftNode::OnInstallSnapshot(const raft::InstallSnapshotRequest* request,
+                                  raft::InstallSnapshotReply* response) {
+    std::unique_lock<std::mutex> lck(mu_);
+    if (current_term_ < request->term()) {
+        current_term_ = request->term();
+        vote_for_ = -1;
+        state_ = State::kFollower;
+        SaveState();
+    }
+    response->set_term(current_term_);
+    if (current_term_ > request->term()) {
+        response->set_success(false);
+        return;
+    }
+    ResetElectionTimerLocked();
+    //如果本地快照已经更新,直接返回成功
+    if (request->last_snapshot_index() <= last_snapshot_index_) {
+        response->set_success(true);
+        return;
+    }
+    //组装完整快照(header + sm数据)并持久化
+    std::string full_snapshot;
+    full_snapshot = std::to_string(request->last_snapshot_index()) + ":" +
+                    std::to_string(request->last_snapshot_term()) + "\n";
+    full_snapshot += request->snapshot_data();
+    persister_->SaveSnapshot(full_snapshot);
+    //应用快照到状态机
+    state_machine_.ApplySnapshot(request->snapshot_data());
+    //更新快照元数据
+    last_snapshot_index_ = request->last_snapshot_index();
+    last_snapshot_term_ = request->last_snapshot_term();
+    //替换日志为sentinel
+    log_.clear();
+    log_.push_back(Entry{last_snapshot_index_, last_snapshot_term_, ""});
+    //推进指针
+    if (last_applied_ < last_snapshot_index_) last_applied_ = last_snapshot_index_;
+    if (commited_index_ < last_snapshot_index_) commited_index_ = last_snapshot_index_;
+    response->set_success(true);
+    printf("node %d: applied snapshot index=%d term=%d\n",
+           me_, last_snapshot_index_, last_snapshot_term_);
 }

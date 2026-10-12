@@ -2,6 +2,8 @@
 #include "raft_node.h"
 #include "raft_rpc.h"
 #include "raft_storage.h"
+#include "persister.h"
+#include "raft_rpc_client.h"
 #include <thread>
 void Test(Storage & storage,std::string op ,std::string key,std::string value)
 {
@@ -45,7 +47,14 @@ int main(int argc,const char*argv[])
         }
     }
     KVStore kv_store;
-    RaftNode raft_node(me,nodes,kv_store);
+    //构建传输层
+    std::map<int,std::shared_ptr<ITransport>> transports;
+    for(const auto&[id,node]:nodes)
+    {
+        transports[id] = std::make_shared<RaftRPCClient>(node.address);
+    }
+    auto persister = std::make_shared<Persister>(me);
+    RaftNode raft_node(me, nodes, std::move(transports), std::move(persister), kv_store);
     RaftServer raft_server;
     raft_server.Start(address,raft_node);
     std::thread th([&](){

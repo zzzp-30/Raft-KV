@@ -25,6 +25,10 @@ public:
     grpc::Status OnRequestVote(grpc::ServerContext*,
                           const raft::VoteRequest* request,
                           raft::VoteReply* response) override;
+    //处理快照安装请求
+    grpc::Status OnInstallSnapshot(grpc::ServerContext*,
+                          const raft::InstallSnapshotRequest* request,
+                          raft::InstallSnapshotReply* response) override;
 };
 //定义RPC服务器
 class RaftServer

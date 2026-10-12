@@ -65,6 +65,14 @@ class HeartBeatRequest;
 struct HeartBeatRequestDefaultTypeInternal;
 extern HeartBeatRequestDefaultTypeInternal _HeartBeatRequest_default_instance_;
 extern const ::google::protobuf::internal::ClassDataFull HeartBeatRequest_class_data_;
+class InstallSnapshotReply;
+struct InstallSnapshotReplyDefaultTypeInternal;
+extern InstallSnapshotReplyDefaultTypeInternal _InstallSnapshotReply_default_instance_;
+extern const ::google::protobuf::internal::ClassDataFull InstallSnapshotReply_class_data_;
+class InstallSnapshotRequest;
+struct InstallSnapshotRequestDefaultTypeInternal;
+extern InstallSnapshotRequestDefaultTypeInternal _InstallSnapshotRequest_default_instance_;
+extern const ::google::protobuf::internal::ClassDataFull InstallSnapshotRequest_class_data_;
 class VoteReply;
 struct VoteReplyDefaultTypeInternal;
 extern VoteReplyDefaultTypeInternal _VoteReply_default_instance_;
@@ -512,6 +520,451 @@ class VoteReply final : public ::google::protobuf::Message
 };
 
 extern const ::google::protobuf::internal::ClassDataFull VoteReply_class_data_;
+// -------------------------------------------------------------------
+
+class InstallSnapshotRequest final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:raft.InstallSnapshotRequest) */ {
+ public:
+  inline InstallSnapshotRequest() : InstallSnapshotRequest(nullptr) {}
+  ~InstallSnapshotRequest() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(InstallSnapshotRequest* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(InstallSnapshotRequest));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR InstallSnapshotRequest(::google::protobuf::internal::ConstantInitialized);
+
+  inline InstallSnapshotRequest(const InstallSnapshotRequest& from) : InstallSnapshotRequest(nullptr, from) {}
+  inline InstallSnapshotRequest(InstallSnapshotRequest&& from) noexcept
+      : InstallSnapshotRequest(nullptr, ::std::move(from)) {}
+  inline InstallSnapshotRequest& operator=(const InstallSnapshotRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline InstallSnapshotRequest& operator=(InstallSnapshotRequest&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const InstallSnapshotRequest& default_instance() {
+    return *reinterpret_cast<const InstallSnapshotRequest*>(
+        &_InstallSnapshotRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 5;
+  friend void swap(InstallSnapshotRequest& a, InstallSnapshotRequest& b) { a.Swap(&b); }
+  inline void Swap(InstallSnapshotRequest* PROTOBUF_NONNULL other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(InstallSnapshotRequest* PROTOBUF_NONNULL other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  InstallSnapshotRequest* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<InstallSnapshotRequest>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const InstallSnapshotRequest& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const InstallSnapshotRequest& from) { InstallSnapshotRequest::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                        const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(InstallSnapshotRequest* PROTOBUF_NONNULL other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "raft.InstallSnapshotRequest"; }
+
+  explicit InstallSnapshotRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  InstallSnapshotRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const InstallSnapshotRequest& from);
+  InstallSnapshotRequest(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, InstallSnapshotRequest&& from) noexcept
+      : InstallSnapshotRequest(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto InternalNewImpl_();
+
+ public:
+  static constexpr auto InternalGenerateClassData_();
+
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kSnapshotDataFieldNumber = 5,
+    kTermFieldNumber = 1,
+    kLeaderIdFieldNumber = 2,
+    kLastSnapshotIndexFieldNumber = 3,
+    kLastSnapshotTermFieldNumber = 4,
+  };
+  // bytes snapshot_data = 5;
+  void clear_snapshot_data() ;
+  const ::std::string& snapshot_data() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_snapshot_data(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_snapshot_data();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_snapshot_data();
+  void set_allocated_snapshot_data(::std::string* PROTOBUF_NULLABLE value);
+
+  private:
+  const ::std::string& _internal_snapshot_data() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_snapshot_data(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_snapshot_data();
+
+  public:
+  // int32 term = 1;
+  void clear_term() ;
+  ::int32_t term() const;
+  void set_term(::int32_t value);
+
+  private:
+  ::int32_t _internal_term() const;
+  void _internal_set_term(::int32_t value);
+
+  public:
+  // int32 leader_id = 2;
+  void clear_leader_id() ;
+  ::int32_t leader_id() const;
+  void set_leader_id(::int32_t value);
+
+  private:
+  ::int32_t _internal_leader_id() const;
+  void _internal_set_leader_id(::int32_t value);
+
+  public:
+  // int32 last_snapshot_index = 3;
+  void clear_last_snapshot_index() ;
+  ::int32_t last_snapshot_index() const;
+  void set_last_snapshot_index(::int32_t value);
+
+  private:
+  ::int32_t _internal_last_snapshot_index() const;
+  void _internal_set_last_snapshot_index(::int32_t value);
+
+  public:
+  // int32 last_snapshot_term = 4;
+  void clear_last_snapshot_term() ;
+  ::int32_t last_snapshot_term() const;
+  void set_last_snapshot_term(::int32_t value);
+
+  private:
+  ::int32_t _internal_last_snapshot_term() const;
+  void _internal_set_last_snapshot_term(::int32_t value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:raft.InstallSnapshotRequest)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<3, 5,
+                                   0, 0,
+                                   2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const InstallSnapshotRequest& from_msg);
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::ArenaStringPtr snapshot_data_;
+    ::int32_t term_;
+    ::int32_t leader_id_;
+    ::int32_t last_snapshot_index_;
+    ::int32_t last_snapshot_term_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_raft_5frpc_2eproto;
+};
+
+extern const ::google::protobuf::internal::ClassDataFull InstallSnapshotRequest_class_data_;
+// -------------------------------------------------------------------
+
+class InstallSnapshotReply final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:raft.InstallSnapshotReply) */ {
+ public:
+  inline InstallSnapshotReply() : InstallSnapshotReply(nullptr) {}
+  ~InstallSnapshotReply() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(InstallSnapshotReply* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(InstallSnapshotReply));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR InstallSnapshotReply(::google::protobuf::internal::ConstantInitialized);
+
+  inline InstallSnapshotReply(const InstallSnapshotReply& from) : InstallSnapshotReply(nullptr, from) {}
+  inline InstallSnapshotReply(InstallSnapshotReply&& from) noexcept
+      : InstallSnapshotReply(nullptr, ::std::move(from)) {}
+  inline InstallSnapshotReply& operator=(const InstallSnapshotReply& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline InstallSnapshotReply& operator=(InstallSnapshotReply&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const InstallSnapshotReply& default_instance() {
+    return *reinterpret_cast<const InstallSnapshotReply*>(
+        &_InstallSnapshotReply_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 6;
+  friend void swap(InstallSnapshotReply& a, InstallSnapshotReply& b) { a.Swap(&b); }
+  inline void Swap(InstallSnapshotReply* PROTOBUF_NONNULL other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(InstallSnapshotReply* PROTOBUF_NONNULL other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  InstallSnapshotReply* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<InstallSnapshotReply>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const InstallSnapshotReply& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const InstallSnapshotReply& from) { InstallSnapshotReply::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(::google::protobuf::MessageLite& to_msg,
+                        const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(InstallSnapshotReply* PROTOBUF_NONNULL other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "raft.InstallSnapshotReply"; }
+
+  explicit InstallSnapshotReply(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  InstallSnapshotReply(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const InstallSnapshotReply& from);
+  InstallSnapshotReply(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, InstallSnapshotReply&& from) noexcept
+      : InstallSnapshotReply(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+  static void* PROTOBUF_NONNULL PlacementNew_(
+      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto InternalNewImpl_();
+
+ public:
+  static constexpr auto InternalGenerateClassData_();
+
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kTermFieldNumber = 1,
+    kSuccessFieldNumber = 2,
+  };
+  // int32 term = 1;
+  void clear_term() ;
+  ::int32_t term() const;
+  void set_term(::int32_t value);
+
+  private:
+  ::int32_t _internal_term() const;
+  void _internal_set_term(::int32_t value);
+
+  public:
+  // bool success = 2;
+  void clear_success() ;
+  bool success() const;
+  void set_success(bool value);
+
+  private:
+  bool _internal_success() const;
+  void _internal_set_success(bool value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:raft.InstallSnapshotReply)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<1, 2,
+                                   0, 0,
+                                   2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    inline explicit Impl_(
+        ::google::protobuf::internal::InternalVisibility visibility,
+        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+        const InstallSnapshotReply& from_msg);
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    ::int32_t term_;
+    bool success_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_raft_5frpc_2eproto;
+};
+
+extern const ::google::protobuf::internal::ClassDataFull InstallSnapshotReply_class_data_;
 // -------------------------------------------------------------------
 
 class HeartBeatReply final : public ::google::protobuf::Message
@@ -1754,6 +2207,229 @@ inline bool VoteReply::_internal_vote_granted() const {
 inline void VoteReply::_internal_set_vote_granted(bool value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.vote_granted_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// InstallSnapshotRequest
+
+// int32 term = 1;
+inline void InstallSnapshotRequest::clear_term() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.term_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
+}
+inline ::int32_t InstallSnapshotRequest::term() const {
+  // @@protoc_insertion_point(field_get:raft.InstallSnapshotRequest.term)
+  return _internal_term();
+}
+inline void InstallSnapshotRequest::set_term(::int32_t value) {
+  _internal_set_term(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  // @@protoc_insertion_point(field_set:raft.InstallSnapshotRequest.term)
+}
+inline ::int32_t InstallSnapshotRequest::_internal_term() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.term_;
+}
+inline void InstallSnapshotRequest::_internal_set_term(::int32_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.term_ = value;
+}
+
+// int32 leader_id = 2;
+inline void InstallSnapshotRequest::clear_leader_id() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.leader_id_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000004U);
+}
+inline ::int32_t InstallSnapshotRequest::leader_id() const {
+  // @@protoc_insertion_point(field_get:raft.InstallSnapshotRequest.leader_id)
+  return _internal_leader_id();
+}
+inline void InstallSnapshotRequest::set_leader_id(::int32_t value) {
+  _internal_set_leader_id(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  // @@protoc_insertion_point(field_set:raft.InstallSnapshotRequest.leader_id)
+}
+inline ::int32_t InstallSnapshotRequest::_internal_leader_id() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.leader_id_;
+}
+inline void InstallSnapshotRequest::_internal_set_leader_id(::int32_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.leader_id_ = value;
+}
+
+// int32 last_snapshot_index = 3;
+inline void InstallSnapshotRequest::clear_last_snapshot_index() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.last_snapshot_index_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000008U);
+}
+inline ::int32_t InstallSnapshotRequest::last_snapshot_index() const {
+  // @@protoc_insertion_point(field_get:raft.InstallSnapshotRequest.last_snapshot_index)
+  return _internal_last_snapshot_index();
+}
+inline void InstallSnapshotRequest::set_last_snapshot_index(::int32_t value) {
+  _internal_set_last_snapshot_index(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  // @@protoc_insertion_point(field_set:raft.InstallSnapshotRequest.last_snapshot_index)
+}
+inline ::int32_t InstallSnapshotRequest::_internal_last_snapshot_index() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.last_snapshot_index_;
+}
+inline void InstallSnapshotRequest::_internal_set_last_snapshot_index(::int32_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.last_snapshot_index_ = value;
+}
+
+// int32 last_snapshot_term = 4;
+inline void InstallSnapshotRequest::clear_last_snapshot_term() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.last_snapshot_term_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000010U);
+}
+inline ::int32_t InstallSnapshotRequest::last_snapshot_term() const {
+  // @@protoc_insertion_point(field_get:raft.InstallSnapshotRequest.last_snapshot_term)
+  return _internal_last_snapshot_term();
+}
+inline void InstallSnapshotRequest::set_last_snapshot_term(::int32_t value) {
+  _internal_set_last_snapshot_term(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
+  // @@protoc_insertion_point(field_set:raft.InstallSnapshotRequest.last_snapshot_term)
+}
+inline ::int32_t InstallSnapshotRequest::_internal_last_snapshot_term() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.last_snapshot_term_;
+}
+inline void InstallSnapshotRequest::_internal_set_last_snapshot_term(::int32_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.last_snapshot_term_ = value;
+}
+
+// bytes snapshot_data = 5;
+inline void InstallSnapshotRequest::clear_snapshot_data() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.snapshot_data_.ClearToEmpty();
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
+}
+inline const ::std::string& InstallSnapshotRequest::snapshot_data() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:raft.InstallSnapshotRequest.snapshot_data)
+  return _internal_snapshot_data();
+}
+template <typename Arg_, typename... Args_>
+PROTOBUF_ALWAYS_INLINE void InstallSnapshotRequest::set_snapshot_data(Arg_&& arg, Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  _impl_.snapshot_data_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:raft.InstallSnapshotRequest.snapshot_data)
+}
+inline ::std::string* PROTOBUF_NONNULL InstallSnapshotRequest::mutable_snapshot_data()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ::std::string* _s = _internal_mutable_snapshot_data();
+  // @@protoc_insertion_point(field_mutable:raft.InstallSnapshotRequest.snapshot_data)
+  return _s;
+}
+inline const ::std::string& InstallSnapshotRequest::_internal_snapshot_data() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.snapshot_data_.Get();
+}
+inline void InstallSnapshotRequest::_internal_set_snapshot_data(const ::std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.snapshot_data_.Set(value, GetArena());
+}
+inline ::std::string* PROTOBUF_NONNULL InstallSnapshotRequest::_internal_mutable_snapshot_data() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.snapshot_data_.Mutable( GetArena());
+}
+inline ::std::string* PROTOBUF_NULLABLE InstallSnapshotRequest::release_snapshot_data() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:raft.InstallSnapshotRequest.snapshot_data)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.snapshot_data_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.snapshot_data_.Set("", GetArena());
+  }
+  return released;
+}
+inline void InstallSnapshotRequest::set_allocated_snapshot_data(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.snapshot_data_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.snapshot_data_.IsDefault()) {
+    _impl_.snapshot_data_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:raft.InstallSnapshotRequest.snapshot_data)
+}
+
+// -------------------------------------------------------------------
+
+// InstallSnapshotReply
+
+// int32 term = 1;
+inline void InstallSnapshotReply::clear_term() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.term_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
+}
+inline ::int32_t InstallSnapshotReply::term() const {
+  // @@protoc_insertion_point(field_get:raft.InstallSnapshotReply.term)
+  return _internal_term();
+}
+inline void InstallSnapshotReply::set_term(::int32_t value) {
+  _internal_set_term(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_set:raft.InstallSnapshotReply.term)
+}
+inline ::int32_t InstallSnapshotReply::_internal_term() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.term_;
+}
+inline void InstallSnapshotReply::_internal_set_term(::int32_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.term_ = value;
+}
+
+// bool success = 2;
+inline void InstallSnapshotReply::clear_success() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.success_ = false;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
+}
+inline bool InstallSnapshotReply::success() const {
+  // @@protoc_insertion_point(field_get:raft.InstallSnapshotReply.success)
+  return _internal_success();
+}
+inline void InstallSnapshotReply::set_success(bool value) {
+  _internal_set_success(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  // @@protoc_insertion_point(field_set:raft.InstallSnapshotReply.success)
+}
+inline bool InstallSnapshotReply::_internal_success() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.success_;
+}
+inline void InstallSnapshotReply::_internal_set_success(bool value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.success_ = value;
 }
 
 #ifdef __GNUC__

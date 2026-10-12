@@ -1,5 +1,6 @@
 #include"kv_store.h"
 #include <mutex>
+#include <sstream>
 bool KVStore::Get(const std::string&key,std::string&value)
 {
     std::lock_guard<std::mutex> lo(mu_);
@@ -38,6 +39,23 @@ void KVStore::CreateSnapshot(std::string&snapshot) {
     {
         snapshot.append("P:"+key+ ":" + value + "\n");
     };
+}
+void KVStore::ApplySnapshot(const std::string&snapshot) {
+    std::lock_guard<std::mutex> lo(mu_);
+    kv_map_.clear();
+    std::istringstream ss(snapshot);
+    std::string line;
+    while(std::getline(ss, line)) {
+        if(line.empty()) continue;
+        // format: "P:key:value"
+        auto first = line.find(':');
+        if(first == std::string::npos) continue;
+        auto second = line.find(':', first + 1);
+        if(second == std::string::npos) continue;
+        std::string key = line.substr(first + 1, second - first - 1);
+        std::string value = line.substr(second + 1);
+        kv_map_[key] = value;
+    }
 }
 KVStore::KVStore() {
 }

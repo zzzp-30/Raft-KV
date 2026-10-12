@@ -80,6 +80,63 @@ struct VoteReplyDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VoteReplyDefaultTypeInternal _VoteReply_default_instance_;
 
+inline constexpr InstallSnapshotRequest::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : _cached_size_{0},
+        snapshot_data_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        term_{0},
+        leader_id_{0},
+        last_snapshot_index_{0},
+        last_snapshot_term_{0} {}
+
+template <typename>
+PROTOBUF_CONSTEXPR InstallSnapshotRequest::InstallSnapshotRequest(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(InstallSnapshotRequest_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
+struct InstallSnapshotRequestDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR InstallSnapshotRequestDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~InstallSnapshotRequestDefaultTypeInternal() {}
+  union {
+    InstallSnapshotRequest _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 InstallSnapshotRequestDefaultTypeInternal _InstallSnapshotRequest_default_instance_;
+
+inline constexpr InstallSnapshotReply::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : _cached_size_{0},
+        term_{0},
+        success_{false} {}
+
+template <typename>
+PROTOBUF_CONSTEXPR InstallSnapshotReply::InstallSnapshotReply(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(InstallSnapshotReply_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
+struct InstallSnapshotReplyDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR InstallSnapshotReplyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~InstallSnapshotReplyDefaultTypeInternal() {}
+  union {
+    InstallSnapshotReply _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 InstallSnapshotReplyDefaultTypeInternal _InstallSnapshotReply_default_instance_;
+
 inline constexpr HeartBeatReply::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
@@ -224,6 +281,26 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::raft::VoteReply, _impl_.vote_granted_),
         0,
         1,
+        0x081, // bitmap
+        PROTOBUF_FIELD_OFFSET(::raft::InstallSnapshotRequest, _impl_._has_bits_),
+        8, // hasbit index offset
+        PROTOBUF_FIELD_OFFSET(::raft::InstallSnapshotRequest, _impl_.term_),
+        PROTOBUF_FIELD_OFFSET(::raft::InstallSnapshotRequest, _impl_.leader_id_),
+        PROTOBUF_FIELD_OFFSET(::raft::InstallSnapshotRequest, _impl_.last_snapshot_index_),
+        PROTOBUF_FIELD_OFFSET(::raft::InstallSnapshotRequest, _impl_.last_snapshot_term_),
+        PROTOBUF_FIELD_OFFSET(::raft::InstallSnapshotRequest, _impl_.snapshot_data_),
+        1,
+        2,
+        3,
+        4,
+        0,
+        0x081, // bitmap
+        PROTOBUF_FIELD_OFFSET(::raft::InstallSnapshotReply, _impl_._has_bits_),
+        5, // hasbit index offset
+        PROTOBUF_FIELD_OFFSET(::raft::InstallSnapshotReply, _impl_.term_),
+        PROTOBUF_FIELD_OFFSET(::raft::InstallSnapshotReply, _impl_.success_),
+        0,
+        1,
 };
 
 static const ::_pbi::MigrationSchema
@@ -233,6 +310,8 @@ static const ::_pbi::MigrationSchema
         {24, sizeof(::raft::HeartBeatReply)},
         {33, sizeof(::raft::VoteRequest)},
         {44, sizeof(::raft::VoteReply)},
+        {51, sizeof(::raft::InstallSnapshotRequest)},
+        {64, sizeof(::raft::InstallSnapshotReply)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::raft::_Entry_default_instance_._instance,
@@ -240,6 +319,8 @@ static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::raft::_HeartBeatReply_default_instance_._instance,
     &::raft::_VoteRequest_default_instance_._instance,
     &::raft::_VoteReply_default_instance_._instance,
+    &::raft::_InstallSnapshotRequest_default_instance_._instance,
+    &::raft::_InstallSnapshotReply_default_instance_._instance,
 };
 const char descriptor_table_protodef_raft_5frpc_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -253,23 +334,30 @@ const char descriptor_table_protodef_raft_5frpc_2eproto[] ABSL_ATTRIBUTE_SECTION
     "dex\030\003 \001(\005\"`\n\013VoteRequest\022\014\n\004term\030\001 \001(\005\022\024"
     "\n\014candidate_id\030\002 \001(\005\022\026\n\016last_log_index\030\003"
     " \001(\005\022\025\n\rlast_log_term\030\004 \001(\005\"/\n\tVoteReply"
-    "\022\014\n\004term\030\001 \001(\005\022\024\n\014vote_granted\030\002 \001(\0102{\n\007"
-    "RaftRPC\022;\n\013OnHeartBeat\022\026.raft.HeartBeatR"
-    "equest\032\024.raft.HeartBeatReply\0223\n\rOnReques"
-    "tVote\022\021.raft.VoteRequest\032\017.raft.VoteRepl"
-    "yb\006proto3"
+    "\022\014\n\004term\030\001 \001(\005\022\024\n\014vote_granted\030\002 \001(\010\"\211\001\n"
+    "\026InstallSnapshotRequest\022\014\n\004term\030\001 \001(\005\022\021\n"
+    "\tleader_id\030\002 \001(\005\022\033\n\023last_snapshot_index\030"
+    "\003 \001(\005\022\032\n\022last_snapshot_term\030\004 \001(\005\022\025\n\rsna"
+    "pshot_data\030\005 \001(\014\"5\n\024InstallSnapshotReply"
+    "\022\014\n\004term\030\001 \001(\005\022\017\n\007success\030\002 \001(\0102\312\001\n\007Raft"
+    "RPC\022;\n\013OnHeartBeat\022\026.raft.HeartBeatReque"
+    "st\032\024.raft.HeartBeatReply\0223\n\rOnRequestVot"
+    "e\022\021.raft.VoteRequest\032\017.raft.VoteReply\022M\n"
+    "\021OnInstallSnapshot\022\034.raft.InstallSnapsho"
+    "tRequest\032\032.raft.InstallSnapshotReplyb\006pr"
+    "oto3"
 };
 static ::absl::once_flag descriptor_table_raft_5frpc_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_raft_5frpc_2eproto = {
     false,
     false,
-    569,
+    844,
     descriptor_table_protodef_raft_5frpc_2eproto,
     "raft_rpc.proto",
     &descriptor_table_raft_5frpc_2eproto_once,
     nullptr,
     0,
-    5,
+    7,
     schemas,
     file_default_instances,
     TableStruct_raft_5frpc_2eproto::offsets,
@@ -2038,6 +2126,706 @@ void VoteReply::InternalSwap(VoteReply* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
 }
 
 ::google::protobuf::Metadata VoteReply::GetMetadata() const {
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+}
+// ===================================================================
+
+class InstallSnapshotRequest::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<InstallSnapshotRequest>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_._has_bits_);
+};
+
+InstallSnapshotRequest::InstallSnapshotRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, InstallSnapshotRequest_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  SharedCtor(arena);
+  // @@protoc_insertion_point(arena_constructor:raft.InstallSnapshotRequest)
+}
+PROTOBUF_NDEBUG_INLINE InstallSnapshotRequest::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::raft::InstallSnapshotRequest& from_msg)
+      : _has_bits_{from._has_bits_},
+        _cached_size_{0},
+        snapshot_data_(arena, from.snapshot_data_) {}
+
+InstallSnapshotRequest::InstallSnapshotRequest(
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const InstallSnapshotRequest& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, InstallSnapshotRequest_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  InstallSnapshotRequest* const _this = this;
+  (void)_this;
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+               offsetof(Impl_, term_),
+           reinterpret_cast<const char*>(&from._impl_) +
+               offsetof(Impl_, term_),
+           offsetof(Impl_, last_snapshot_term_) -
+               offsetof(Impl_, term_) +
+               sizeof(Impl_::last_snapshot_term_));
+
+  // @@protoc_insertion_point(copy_constructor:raft.InstallSnapshotRequest)
+}
+PROTOBUF_NDEBUG_INLINE InstallSnapshotRequest::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+      : _cached_size_{0},
+        snapshot_data_(arena) {}
+
+inline void InstallSnapshotRequest::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
+               offsetof(Impl_, term_),
+           0,
+           offsetof(Impl_, last_snapshot_term_) -
+               offsetof(Impl_, term_) +
+               sizeof(Impl_::last_snapshot_term_));
+}
+InstallSnapshotRequest::~InstallSnapshotRequest() {
+  // @@protoc_insertion_point(destructor:raft.InstallSnapshotRequest)
+  SharedDtor(*this);
+}
+inline void InstallSnapshotRequest::SharedDtor(MessageLite& self) {
+  InstallSnapshotRequest& this_ = static_cast<InstallSnapshotRequest&>(self);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.snapshot_data_.Destroy();
+  this_._impl_.~Impl_();
+}
+
+inline void* PROTOBUF_NONNULL InstallSnapshotRequest::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) InstallSnapshotRequest(arena);
+}
+constexpr auto InstallSnapshotRequest::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(InstallSnapshotRequest),
+                                            alignof(InstallSnapshotRequest));
+}
+constexpr auto InstallSnapshotRequest::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_InstallSnapshotRequest_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          nullptr,  // IsInitialized
+          &InstallSnapshotRequest::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<InstallSnapshotRequest>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &InstallSnapshotRequest::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<InstallSnapshotRequest>(), &InstallSnapshotRequest::ByteSizeLong,
+              &InstallSnapshotRequest::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_._cached_size_),
+          false,
+      },
+      &InstallSnapshotRequest::kDescriptorMethods,
+      &descriptor_table_raft_5frpc_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull InstallSnapshotRequest_class_data_ =
+        InstallSnapshotRequest::InternalGenerateClassData_();
+
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+InstallSnapshotRequest::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&InstallSnapshotRequest_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(InstallSnapshotRequest_class_data_.tc_table);
+  return InstallSnapshotRequest_class_data_.base();
+}
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::TcParseTable<3, 5, 0, 0, 2>
+InstallSnapshotRequest::_table_ = {
+  {
+    PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_._has_bits_),
+    0, // no _extensions_
+    5, 56,  // max_field_number, fast_idx_mask
+    offsetof(decltype(_table_), field_lookup_table),
+    4294967264,  // skipmap
+    offsetof(decltype(_table_), field_entries),
+    5,  // num_field_entries
+    0,  // num_aux_entries
+    offsetof(decltype(_table_), field_names),  // no aux_entries
+    InstallSnapshotRequest_class_data_.base(),
+    nullptr,  // post_loop_handler
+    ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::raft::InstallSnapshotRequest>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  }, {{
+    {::_pbi::TcParser::MiniParse, {}},
+    // int32 term = 1;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(InstallSnapshotRequest, _impl_.term_), 1>(),
+     {8, 1, 0,
+      PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.term_)}},
+    // int32 leader_id = 2;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(InstallSnapshotRequest, _impl_.leader_id_), 2>(),
+     {16, 2, 0,
+      PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.leader_id_)}},
+    // int32 last_snapshot_index = 3;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(InstallSnapshotRequest, _impl_.last_snapshot_index_), 3>(),
+     {24, 3, 0,
+      PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.last_snapshot_index_)}},
+    // int32 last_snapshot_term = 4;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(InstallSnapshotRequest, _impl_.last_snapshot_term_), 4>(),
+     {32, 4, 0,
+      PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.last_snapshot_term_)}},
+    // bytes snapshot_data = 5;
+    {::_pbi::TcParser::FastBS1,
+     {42, 0, 0,
+      PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.snapshot_data_)}},
+    {::_pbi::TcParser::MiniParse, {}},
+    {::_pbi::TcParser::MiniParse, {}},
+  }}, {{
+    65535, 65535
+  }}, {{
+    // int32 term = 1;
+    {PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.term_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    // int32 leader_id = 2;
+    {PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.leader_id_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    // int32 last_snapshot_index = 3;
+    {PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.last_snapshot_index_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    // int32 last_snapshot_term = 4;
+    {PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.last_snapshot_term_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    // bytes snapshot_data = 5;
+    {PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.snapshot_data_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
+  }},
+  // no aux_entries
+  {{
+  }},
+};
+PROTOBUF_NOINLINE void InstallSnapshotRequest::Clear() {
+// @@protoc_insertion_point(message_clear_start:raft.InstallSnapshotRequest)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+    _impl_.snapshot_data_.ClearNonDefaultToEmpty();
+  }
+  if (BatchCheckHasBit(cached_has_bits, 0x0000001eU)) {
+    ::memset(&_impl_.term_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.last_snapshot_term_) -
+        reinterpret_cast<char*>(&_impl_.term_)) + sizeof(_impl_.last_snapshot_term_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::uint8_t* PROTOBUF_NONNULL InstallSnapshotRequest::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
+  const InstallSnapshotRequest& this_ = static_cast<const InstallSnapshotRequest&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::uint8_t* PROTOBUF_NONNULL InstallSnapshotRequest::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  const InstallSnapshotRequest& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  // @@protoc_insertion_point(serialize_to_array_start:raft.InstallSnapshotRequest)
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = this_._impl_._has_bits_[0];
+  // int32 term = 1;
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    if (this_._internal_term() != 0) {
+      target =
+          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
+              stream, this_._internal_term(), target);
+    }
+  }
+
+  // int32 leader_id = 2;
+  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+    if (this_._internal_leader_id() != 0) {
+      target =
+          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
+              stream, this_._internal_leader_id(), target);
+    }
+  }
+
+  // int32 last_snapshot_index = 3;
+  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+    if (this_._internal_last_snapshot_index() != 0) {
+      target =
+          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
+              stream, this_._internal_last_snapshot_index(), target);
+    }
+  }
+
+  // int32 last_snapshot_term = 4;
+  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+    if (this_._internal_last_snapshot_term() != 0) {
+      target =
+          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<4>(
+              stream, this_._internal_last_snapshot_term(), target);
+    }
+  }
+
+  // bytes snapshot_data = 5;
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+    if (!this_._internal_snapshot_data().empty()) {
+      const ::std::string& _s = this_._internal_snapshot_data();
+      target = stream->WriteBytesMaybeAliased(5, _s, target);
+    }
+  }
+
+  if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:raft.InstallSnapshotRequest)
+  return target;
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::size_t InstallSnapshotRequest::ByteSizeLong(const MessageLite& base) {
+  const InstallSnapshotRequest& this_ = static_cast<const InstallSnapshotRequest&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::size_t InstallSnapshotRequest::ByteSizeLong() const {
+  const InstallSnapshotRequest& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  // @@protoc_insertion_point(message_byte_size_start:raft.InstallSnapshotRequest)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
+    // bytes snapshot_data = 5;
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      if (!this_._internal_snapshot_data().empty()) {
+        total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
+                                        this_._internal_snapshot_data());
+      }
+    }
+    // int32 term = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (this_._internal_term() != 0) {
+        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+            this_._internal_term());
+      }
+    }
+    // int32 leader_id = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      if (this_._internal_leader_id() != 0) {
+        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+            this_._internal_leader_id());
+      }
+    }
+    // int32 last_snapshot_index = 3;
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      if (this_._internal_last_snapshot_index() != 0) {
+        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+            this_._internal_last_snapshot_index());
+      }
+    }
+    // int32 last_snapshot_term = 4;
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+      if (this_._internal_last_snapshot_term() != 0) {
+        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+            this_._internal_last_snapshot_term());
+      }
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+
+void InstallSnapshotRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<InstallSnapshotRequest*>(&to_msg);
+  auto& from = static_cast<const InstallSnapshotRequest&>(from_msg);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    from.CheckHasBitConsistency();
+  }
+  // @@protoc_insertion_point(class_specific_merge_from_start:raft.InstallSnapshotRequest)
+  ABSL_DCHECK_NE(&from, _this);
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      if (!from._internal_snapshot_data().empty()) {
+        _this->_internal_set_snapshot_data(from._internal_snapshot_data());
+      } else {
+        if (_this->_impl_.snapshot_data_.IsDefault()) {
+          _this->_internal_set_snapshot_data("");
+        }
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (from._internal_term() != 0) {
+        _this->_impl_.term_ = from._impl_.term_;
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      if (from._internal_leader_id() != 0) {
+        _this->_impl_.leader_id_ = from._impl_.leader_id_;
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      if (from._internal_last_snapshot_index() != 0) {
+        _this->_impl_.last_snapshot_index_ = from._impl_.last_snapshot_index_;
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+      if (from._internal_last_snapshot_term() != 0) {
+        _this->_impl_.last_snapshot_term_ = from._impl_.last_snapshot_term_;
+      }
+    }
+  }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+}
+
+void InstallSnapshotRequest::CopyFrom(const InstallSnapshotRequest& from) {
+  // @@protoc_insertion_point(class_specific_copy_from_start:raft.InstallSnapshotRequest)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+
+void InstallSnapshotRequest::InternalSwap(InstallSnapshotRequest* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+  using ::std::swap;
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.snapshot_data_, &other->_impl_.snapshot_data_, arena);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.last_snapshot_term_)
+      + sizeof(InstallSnapshotRequest::_impl_.last_snapshot_term_)
+      - PROTOBUF_FIELD_OFFSET(InstallSnapshotRequest, _impl_.term_)>(
+          reinterpret_cast<char*>(&_impl_.term_),
+          reinterpret_cast<char*>(&other->_impl_.term_));
+}
+
+::google::protobuf::Metadata InstallSnapshotRequest::GetMetadata() const {
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+}
+// ===================================================================
+
+class InstallSnapshotReply::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<InstallSnapshotReply>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(InstallSnapshotReply, _impl_._has_bits_);
+};
+
+InstallSnapshotReply::InstallSnapshotReply(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, InstallSnapshotReply_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  SharedCtor(arena);
+  // @@protoc_insertion_point(arena_constructor:raft.InstallSnapshotReply)
+}
+InstallSnapshotReply::InstallSnapshotReply(
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const InstallSnapshotReply& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, InstallSnapshotReply_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+}
+PROTOBUF_NDEBUG_INLINE InstallSnapshotReply::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+      : _cached_size_{0} {}
+
+inline void InstallSnapshotReply::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
+               offsetof(Impl_, term_),
+           0,
+           offsetof(Impl_, success_) -
+               offsetof(Impl_, term_) +
+               sizeof(Impl_::success_));
+}
+InstallSnapshotReply::~InstallSnapshotReply() {
+  // @@protoc_insertion_point(destructor:raft.InstallSnapshotReply)
+  SharedDtor(*this);
+}
+inline void InstallSnapshotReply::SharedDtor(MessageLite& self) {
+  InstallSnapshotReply& this_ = static_cast<InstallSnapshotReply&>(self);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
+}
+
+inline void* PROTOBUF_NONNULL InstallSnapshotReply::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) InstallSnapshotReply(arena);
+}
+constexpr auto InstallSnapshotReply::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(InstallSnapshotReply),
+                                            alignof(InstallSnapshotReply));
+}
+constexpr auto InstallSnapshotReply::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_InstallSnapshotReply_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          nullptr,  // IsInitialized
+          &InstallSnapshotReply::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<InstallSnapshotReply>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &InstallSnapshotReply::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<InstallSnapshotReply>(), &InstallSnapshotReply::ByteSizeLong,
+              &InstallSnapshotReply::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(InstallSnapshotReply, _impl_._cached_size_),
+          false,
+      },
+      &InstallSnapshotReply::kDescriptorMethods,
+      &descriptor_table_raft_5frpc_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull InstallSnapshotReply_class_data_ =
+        InstallSnapshotReply::InternalGenerateClassData_();
+
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+InstallSnapshotReply::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&InstallSnapshotReply_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(InstallSnapshotReply_class_data_.tc_table);
+  return InstallSnapshotReply_class_data_.base();
+}
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::TcParseTable<1, 2, 0, 0, 2>
+InstallSnapshotReply::_table_ = {
+  {
+    PROTOBUF_FIELD_OFFSET(InstallSnapshotReply, _impl_._has_bits_),
+    0, // no _extensions_
+    2, 8,  // max_field_number, fast_idx_mask
+    offsetof(decltype(_table_), field_lookup_table),
+    4294967292,  // skipmap
+    offsetof(decltype(_table_), field_entries),
+    2,  // num_field_entries
+    0,  // num_aux_entries
+    offsetof(decltype(_table_), field_names),  // no aux_entries
+    InstallSnapshotReply_class_data_.base(),
+    nullptr,  // post_loop_handler
+    ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::raft::InstallSnapshotReply>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  }, {{
+    // bool success = 2;
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(InstallSnapshotReply, _impl_.success_), 1>(),
+     {16, 1, 0,
+      PROTOBUF_FIELD_OFFSET(InstallSnapshotReply, _impl_.success_)}},
+    // int32 term = 1;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(InstallSnapshotReply, _impl_.term_), 0>(),
+     {8, 0, 0,
+      PROTOBUF_FIELD_OFFSET(InstallSnapshotReply, _impl_.term_)}},
+  }}, {{
+    65535, 65535
+  }}, {{
+    // int32 term = 1;
+    {PROTOBUF_FIELD_OFFSET(InstallSnapshotReply, _impl_.term_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    // bool success = 2;
+    {PROTOBUF_FIELD_OFFSET(InstallSnapshotReply, _impl_.success_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+  }},
+  // no aux_entries
+  {{
+  }},
+};
+PROTOBUF_NOINLINE void InstallSnapshotReply::Clear() {
+// @@protoc_insertion_point(message_clear_start:raft.InstallSnapshotReply)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    ::memset(&_impl_.term_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.success_) -
+        reinterpret_cast<char*>(&_impl_.term_)) + sizeof(_impl_.success_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::uint8_t* PROTOBUF_NONNULL InstallSnapshotReply::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
+  const InstallSnapshotReply& this_ = static_cast<const InstallSnapshotReply&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::uint8_t* PROTOBUF_NONNULL InstallSnapshotReply::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  const InstallSnapshotReply& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  // @@protoc_insertion_point(serialize_to_array_start:raft.InstallSnapshotReply)
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = this_._impl_._has_bits_[0];
+  // int32 term = 1;
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+    if (this_._internal_term() != 0) {
+      target =
+          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
+              stream, this_._internal_term(), target);
+    }
+  }
+
+  // bool success = 2;
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    if (this_._internal_success() != 0) {
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteBoolToArray(
+          2, this_._internal_success(), target);
+    }
+  }
+
+  if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:raft.InstallSnapshotReply)
+  return target;
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::size_t InstallSnapshotReply::ByteSizeLong(const MessageLite& base) {
+  const InstallSnapshotReply& this_ = static_cast<const InstallSnapshotReply&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::size_t InstallSnapshotReply::ByteSizeLong() const {
+  const InstallSnapshotReply& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  // @@protoc_insertion_point(message_byte_size_start:raft.InstallSnapshotReply)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    // int32 term = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      if (this_._internal_term() != 0) {
+        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+            this_._internal_term());
+      }
+    }
+    // bool success = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (this_._internal_success() != 0) {
+        total_size += 2;
+      }
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+
+void InstallSnapshotReply::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<InstallSnapshotReply*>(&to_msg);
+  auto& from = static_cast<const InstallSnapshotReply&>(from_msg);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    from.CheckHasBitConsistency();
+  }
+  // @@protoc_insertion_point(class_specific_merge_from_start:raft.InstallSnapshotReply)
+  ABSL_DCHECK_NE(&from, _this);
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      if (from._internal_term() != 0) {
+        _this->_impl_.term_ = from._impl_.term_;
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (from._internal_success() != 0) {
+        _this->_impl_.success_ = from._impl_.success_;
+      }
+    }
+  }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+}
+
+void InstallSnapshotReply::CopyFrom(const InstallSnapshotReply& from) {
+  // @@protoc_insertion_point(class_specific_copy_from_start:raft.InstallSnapshotReply)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+
+void InstallSnapshotReply::InternalSwap(InstallSnapshotReply* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+  using ::std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(InstallSnapshotReply, _impl_.success_)
+      + sizeof(InstallSnapshotReply::_impl_.success_)
+      - PROTOBUF_FIELD_OFFSET(InstallSnapshotReply, _impl_.term_)>(
+          reinterpret_cast<char*>(&_impl_.term_),
+          reinterpret_cast<char*>(&other->_impl_.term_));
+}
+
+::google::protobuf::Metadata InstallSnapshotReply::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)
