@@ -20,6 +20,7 @@ public:
     virtual bool InspectorIsCandidate() const = 0;
     virtual int InspectorCommitIndex() const = 0;
     virtual int InspectorLastApplied() const = 0;
+    virtual int InspectorLastSnapshotIndex() const = 0;
     virtual std::vector<Entry> InspectorLog() const = 0;
 };
 

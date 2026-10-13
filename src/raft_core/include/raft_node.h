@@ -91,7 +91,7 @@ private:
     //快照点:最后快照的日志序号和任期
     int last_snapshot_index_ = 0;
     int last_snapshot_term_ = 0;
-    static constexpr int kSnapshotThreshold = 10;
+    int snapshot_threshold_ = 10;  // 可配置快照阈值，默认10条
 // Lease read
     std::shared_ptr<IClock> clock_;
     std::chrono::steady_clock::time_point lease_expire_;
@@ -205,14 +205,16 @@ public:
              std::map<int,std::shared_ptr<ITransport>> transports,
              std::shared_ptr<IPersister> persister,
              IStateMachine& kv_store,
-             std::shared_ptr<IClock> clock = std::make_shared<SteadyClock>())
+             std::shared_ptr<IClock> clock = std::make_shared<SteadyClock>(),
+             int snapshot_threshold = 10)
     : me_(id)
     , peers_(kNodes)
     , transports_(std::move(transports))
     , rng_(MakeRng(id))
     , persister_(std::move(persister))
     , state_machine_(kv_store)
-    , clock_(std::move(clock)) {
+    , clock_(std::move(clock))
+    , snapshot_threshold_(snapshot_threshold) {
         peers_.erase(id);
         transports_.erase(id);
         this->log_.push_back(Entry{0,0,""});
@@ -297,6 +299,11 @@ public:
     {
         std::lock_guard<std::mutex> lck(mu_);
         return last_applied_;
+    }
+    int InspectorLastSnapshotIndex() const override
+    {
+        std::lock_guard<std::mutex> lck(mu_);
+        return last_snapshot_index_;
     }
     std::vector<Entry> InspectorLog() const override
     {

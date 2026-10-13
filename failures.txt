@@ -1,0 +1,36 @@
+=== Tue Oct 13 10:13:53 2026
+FAIL: proposal ms1_1 failed
+  node 0: term=2 commit=2 applied=2 log_size=3
+  node 1: term=2 commit=0 applied=0 log_size=1
+  node 2: term=2 commit=2 applied=2 log_size=3
+
+=== Tue Oct 13 10:14:04 2026
+FAIL: data inconsistent after crash during snapshot: sdc8
+  node 0: term=1 commit=21 applied=21 log_size=4
+  node 1: term=1 commit=21 applied=21 log_size=4
+  node 2: term=1 commit=21 applied=21 log_size=4
+
+=== Tue Oct 13 10:16:40 2026
+FAIL: proposal ms2_0 failed
+  node 0: term=5 commit=18 applied=18 log_size=10
+  node 1: term=5 commit=18 applied=18 log_size=10
+  node 2: term=5 commit=18 applied=18 log_size=10
+
+=== Tue Oct 13 10:16:53 2026
+FAIL: data inconsistent after crash during snapshot: sdc8
+  node 0: term=1 commit=21 applied=21 log_size=4
+  node 1: term=1 commit=21 applied=21 log_size=4
+  node 2: term=1 commit=21 applied=21 log_size=4
+
+=== Tue Oct 13 10:18:17 2026
+FAIL: post-partition proposal failed
+  node 0: term=2 commit=2 applied=2 log_size=3
+  node 1: term=2 commit=2 applied=2 log_size=4
+  node 2: term=2 commit=2 applied=2 log_size=3
+
+=== Tue Oct 13 10:18:31 2026
+FAIL: proposal ms1_14 failed
+  node 0: term=4 commit=16 applied=16 log_size=8
+  node 1: term=4 commit=0 applied=0 log_size=1
+  node 2: term=4 commit=16 applied=16 log_size=8
+

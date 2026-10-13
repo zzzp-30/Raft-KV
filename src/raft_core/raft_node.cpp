@@ -616,7 +616,7 @@ bool RaftNode::LoadSnapshot() {
 
 void RaftNode::MaybeCreateSnapshot() {
     std::lock_guard<std::mutex> lck(mu_);
-    if ((int)log_.size() - 1 < kSnapshotThreshold) return;
+    if ((int)log_.size() - 1 < snapshot_threshold_) return;
     if (last_applied_ <= last_snapshot_index_) return;
     std::string sm_data;
     state_machine_.CreateSnapshot(sm_data);

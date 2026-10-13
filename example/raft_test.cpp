@@ -333,14 +333,34 @@ bool TestCrashRecovery() {
     h.CrashRestartNode(crashed);
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
+    // 验收 1: currentTerm 绝不回退
     int term_after = h.GetInspector(crashed)->InspectorTerm();
     ASSERT_TRUE(term_after >= term_before,
         "term decreased after crash: " + std::to_string(term_before) +
         " -> " + std::to_string(term_after));
 
+    // 验收 2: 已提交的写入一定可见
     auto log_after = h.GetInspector(crashed)->InspectorLog();
     ASSERT_TRUE(log_after.size() >= 6,
         "log too short after crash recovery: " + std::to_string(log_after.size()));
+
+    // 等待状态机重放完成
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    for (int i = 0; i < 5; ++i) {
+        std::string val;
+        h.GetKV(crashed)->Get("ck" + std::to_string(i), val);
+        std::string expected = "cv" + std::to_string(i);
+        ASSERT_TRUE(val == expected,
+            "committed write not visible after crash: ck" + std::to_string(i) +
+            " expected='" + expected + "' got='" + val + "'");
+    }
+
+    // 验收 3: 状态机不重复执行（通过 Oracle 验证所有节点一致性）
+    for (int i = 0; i < 3; ++i) {
+        std::string err;
+        ASSERT_TRUE(oracle.Verify(h.GetKV(i), err),
+            "node " + std::to_string(i) + " after crash: " + err);
+    }
 
     std::string inv = h.CheckInvariants();
     ASSERT_TRUE(inv.find("OK") != std::string::npos, inv);
@@ -483,6 +503,179 @@ bool TestLogDivergenceRecovery() {
     return true;
 }
 
+// ---------------------------------------------------------------------------
+// Test: snapshot then immediate kill — verify lastIncludedIndex survives.
+// ---------------------------------------------------------------------------
+bool TestSnapshotCrashRecovery() {
+    TestHarness h(3);
+    harness_ptr = &h;
+    int leader = h.WaitForLeader(10000);
+    ASSERT_TRUE(leader >= 0, "no leader elected within 10s");
+
+    // Write 15 entries to trigger snapshot (threshold=10)
+    for (int i = 0; i < 15; ++i) {
+        std::string cmd = "put sc" + std::to_string(i) + " sv" + std::to_string(i);
+        bool ok = h.Propose(leader, cmd);
+        ASSERT_TRUE(ok, "proposal " + std::to_string(i) + " failed");
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+    // Verify snapshot was created on leader
+    auto leader_log = h.GetInspector(leader)->InspectorLog();
+    int snapshot_index = h.GetInspector(leader)->InspectorLastSnapshotIndex();
+    ASSERT_TRUE(snapshot_index > 0, "no snapshot created on leader");
+
+    // Kill the leader immediately after snapshot
+    int crashed = leader;
+    h.CrashRestartNode(crashed);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
+    // Verify lastSnapshotIndex survived the crash
+    int snapshot_after = h.GetInspector(crashed)->InspectorLastSnapshotIndex();
+    ASSERT_TRUE(snapshot_after == snapshot_index,
+        "lastSnapshotIndex changed after crash: " + std::to_string(snapshot_index) +
+        " -> " + std::to_string(snapshot_after));
+
+    // Verify all data is still accessible
+    for (int i = 0; i < 15; ++i) {
+        std::string val;
+        h.GetKV(crashed)->Get("sc" + std::to_string(i), val);
+        std::string expected = "sv" + std::to_string(i);
+        ASSERT_TRUE(val == expected,
+            "data lost after snapshot crash: sc" + std::to_string(i) +
+            " expected='" + expected + "' got='" + val + "'");
+    }
+
+    std::string inv = h.CheckInvariants();
+    ASSERT_TRUE(inv.find("OK") != std::string::npos, inv);
+    return true;
+}
+
+// ---------------------------------------------------------------------------
+// Test: InstallSnapshot then append more logs, follower falls behind again.
+// ---------------------------------------------------------------------------
+bool TestMultipleSnapshots() {
+    TestHarness h(3);
+    harness_ptr = &h;
+    int leader = h.WaitForLeader(10000);
+    ASSERT_TRUE(leader >= 0, "no leader elected within 10s");
+
+    // Pick a non-leader node
+    int lagging = -1;
+    for (int i = 0; i < 3; ++i) {
+        if (i != leader) { lagging = i; break; }
+    }
+
+    // Isolate the lagging node
+    h.GetFaults().IsolateNode(lagging);
+    // Wait for cluster to stabilize with remaining 2 nodes
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    // Verify leader is still valid
+    leader = h.WaitForLeader(5000);
+    ASSERT_TRUE(leader >= 0, "no leader after isolation");
+    ASSERT_TRUE(leader != lagging, "leader was isolated");
+
+    // Write 15 entries on the remaining cluster (triggers first snapshot)
+    for (int i = 0; i < 15; ++i) {
+        std::string cmd = "put ms1_" + std::to_string(i) + " val1";
+        bool ok = h.Propose(leader, cmd);
+        ASSERT_TRUE(ok, "proposal ms1_" + std::to_string(i) + " failed");
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    // Restore the lagging node — it should receive InstallSnapshot
+    h.GetFaults().RestoreNode(lagging);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
+    // Verify first batch of data
+    for (int i = 0; i < 15; ++i) {
+        std::string val;
+        h.GetKV(lagging)->Get("ms1_" + std::to_string(i), val);
+        ASSERT_TRUE(val == "val1",
+            "first snapshot data missing: ms1_" + std::to_string(i));
+    }
+
+    // Isolate again and write more (triggers second snapshot)
+    h.GetFaults().IsolateNode(lagging);
+    // Wait for cluster to stabilize
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    leader = h.WaitForLeader(5000);
+    ASSERT_TRUE(leader >= 0, "no leader after second isolation");
+
+    for (int i = 0; i < 15; ++i) {
+        std::string cmd = "put ms2_" + std::to_string(i) + " val2";
+        bool ok = h.Propose(leader, cmd);
+        ASSERT_TRUE(ok, "proposal ms2_" + std::to_string(i) + " failed");
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    // Restore again — should receive second InstallSnapshot
+    h.GetFaults().RestoreNode(lagging);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
+    // Verify both batches of data
+    for (int i = 0; i < 15; ++i) {
+        std::string val;
+        h.GetKV(lagging)->Get("ms1_" + std::to_string(i), val);
+        ASSERT_TRUE(val == "val1",
+            "first batch lost after second snapshot: ms1_" + std::to_string(i));
+        h.GetKV(lagging)->Get("ms2_" + std::to_string(i), val);
+        ASSERT_TRUE(val == "val2",
+            "second batch missing: ms2_" + std::to_string(i));
+    }
+
+    std::string inv = h.CheckInvariants();
+    ASSERT_TRUE(inv.find("OK") != std::string::npos, inv);
+    return true;
+}
+
+// ---------------------------------------------------------------------------
+// Test: crash during snapshot generation — verify consistency.
+// ---------------------------------------------------------------------------
+bool TestSnapshotDuringCrash() {
+    TestHarness h(3);
+    harness_ptr = &h;
+    int leader = h.WaitForLeader(10000);
+    ASSERT_TRUE(leader >= 0, "no leader elected within 10s");
+
+    // Pick a non-leader node to crash
+    int crashed = -1;
+    for (int i = 0; i < 3; ++i) {
+        if (i != leader) { crashed = i; break; }
+    }
+
+    // Crash the node before any writes
+    h.CrashRestartNode(crashed);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    // Write 20 entries on the remaining cluster to trigger snapshot
+    for (int i = 0; i < 20; ++i) {
+        std::string cmd = "put sdc" + std::to_string(i) + " val";
+        bool ok = h.Propose(leader, cmd);
+        ASSERT_TRUE(ok, "proposal " + std::to_string(i) + " failed");
+    }
+    // Wait for snapshot to be created on leader
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+    // Restart the crashed node — it should catch up via InstallSnapshot
+    h.CrashRestartNode(crashed);
+    // Wait for InstallSnapshot to complete and state machine to apply
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+    // Verify all data is consistent
+    for (int i = 0; i < 20; ++i) {
+        std::string val;
+        h.GetKV(crashed)->Get("sdc" + std::to_string(i), val);
+        ASSERT_TRUE(val == "val",
+            "data inconsistent after crash during snapshot: sdc" + std::to_string(i));
+    }
+
+    std::string inv = h.CheckInvariants();
+    ASSERT_TRUE(inv.find("OK") != std::string::npos, inv);
+    return true;
+}
+
 int main() {
     std::cout << "=== Raft Correctness Tests ===\n\n";
 
@@ -498,6 +691,9 @@ int main() {
     RUN_TEST(TestLeaderHint);
     RUN_TEST(TestElectionRestriction);
     RUN_TEST(TestLogDivergenceRecovery);
+    RUN_TEST(TestSnapshotCrashRecovery);
+    RUN_TEST(TestMultipleSnapshots);
+    RUN_TEST(TestSnapshotDuringCrash);
 
     std::cout << "\n=== Results: " << g_passed << " passed, "
               << g_failed << " failed ===\n";
