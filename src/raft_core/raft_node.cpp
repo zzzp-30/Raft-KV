@@ -494,7 +494,7 @@ void RaftNode::Ticker() {
 }
 void RaftNode::ResetElectionTimerLocked() {
 
-    auto timeout = std::chrono::milliseconds(500+rng_()%500);
+    auto timeout = std::chrono::milliseconds(150+rng_()%150);
 
     if(this->state_ == State::kCandidate)
     {
@@ -580,7 +580,7 @@ int RaftNode::ReadIndex(int timeout_ms) {
     while (std::chrono::steady_clock::now() < deadline) {
         if (lost.load()) return -1;
         if (confirmations.load() >= majority) break;
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     if (confirmations.load() < majority || lost.load()) return -1;
     {

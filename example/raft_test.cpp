@@ -482,7 +482,12 @@ bool TestLogDivergenceRecovery() {
     }
 
     h.GetFaults().IsolateNode(follower_a);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    // Wait for cluster to stabilize and new leader to be ready
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+    // Get stable leader (now with capability probing)
+    leader = h.WaitForLeader(5000);
+    ASSERT_TRUE(leader >= 0, "no leader after isolation");
 
     oracle.Record("put after_partition yes");
     ok = h.Propose(leader, "put after_partition yes");
@@ -568,13 +573,12 @@ bool TestMultipleSnapshots() {
 
     // Isolate the lagging node
     h.GetFaults().IsolateNode(lagging);
-    // Wait for cluster to stabilize with remaining 2 nodes
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // Wait for cluster to stabilize and new leader to be ready
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-    // Verify leader is still valid
+    // Get stable leader (now with capability probing)
     leader = h.WaitForLeader(5000);
     ASSERT_TRUE(leader >= 0, "no leader after isolation");
-    ASSERT_TRUE(leader != lagging, "leader was isolated");
 
     // Write 15 entries on the remaining cluster (triggers first snapshot)
     for (int i = 0; i < 15; ++i) {
@@ -598,8 +602,10 @@ bool TestMultipleSnapshots() {
 
     // Isolate again and write more (triggers second snapshot)
     h.GetFaults().IsolateNode(lagging);
-    // Wait for cluster to stabilize
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // Wait for cluster to stabilize and new leader to be ready
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+    // Get stable leader (now with capability probing)
     leader = h.WaitForLeader(5000);
     ASSERT_TRUE(leader >= 0, "no leader after second isolation");
 

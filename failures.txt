@@ -34,3 +34,45 @@ FAIL: proposal ms1_14 failed
   node 1: term=4 commit=0 applied=0 log_size=1
   node 2: term=4 commit=16 applied=16 log_size=8
 
+=== Tue Oct 13 10:53:02 2026
+FAIL: post-partition proposal failed
+  node 0: term=2 commit=3 applied=3 log_size=4
+  node 1: term=2 commit=3 applied=3 log_size=4
+  node 2: term=2 commit=3 applied=3 log_size=4
+
+=== Tue Oct 13 11:02:10 2026
+FAIL: post-partition proposal failed
+  node 0: term=2 commit=3 applied=3 log_size=4
+  node 1: term=2 commit=3 applied=3 log_size=4
+  node 2: term=2 commit=3 applied=3 log_size=4
+
+=== Tue Oct 13 11:02:22 2026
+FAIL: proposal ms1_9 failed
+  node 0: term=4 commit=0 applied=0 log_size=1
+  node 1: term=4 commit=11 applied=11 log_size=3
+  node 2: term=4 commit=11 applied=11 log_size=3
+
+=== Tue Oct 13 11:12:07 2026
+FAIL: leader was isolated
+  node 0: term=2 commit=3 applied=3 log_size=4
+  node 1: term=2 commit=3 applied=3 log_size=4
+  node 2: term=2 commit=3 applied=3 log_size=4
+
+=== Tue Oct 13 11:12:19 2026
+FAIL: proposal ms1_9 failed
+  node 0: term=4 commit=0 applied=0 log_size=1
+  node 1: term=4 commit=11 applied=11 log_size=3
+  node 2: term=4 commit=11 applied=11 log_size=3
+
+=== Tue Oct 13 11:21:06 2026
+FAIL: leader was isolated
+  node 0: term=2 commit=3 applied=3 log_size=4
+  node 1: term=2 commit=3 applied=3 log_size=4
+  node 2: term=2 commit=3 applied=3 log_size=4
+
+=== Tue Oct 13 11:21:18 2026
+FAIL: proposal ms1_6 failed
+  node 0: term=4 commit=8 applied=8 log_size=9
+  node 1: term=4 commit=0 applied=0 log_size=1
+  node 2: term=4 commit=8 applied=8 log_size=9
+
