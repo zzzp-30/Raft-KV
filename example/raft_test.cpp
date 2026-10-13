@@ -676,6 +676,82 @@ bool TestSnapshotDuringCrash() {
     return true;
 }
 
+// ---------------------------------------------------------------------------
+// Test: random perturbation — 200 rounds with fixed seed, collect metrics.
+// ---------------------------------------------------------------------------
+bool TestRandomPerturbation() {
+    const int kRounds = 200;
+    const unsigned int kSeed = 42;
+    std::mt19937 rng(kSeed);
+
+    int total_leader_switches = 0;
+    int total_partitions = 0;
+    int total_invariant_violations = 0;
+
+    std::cout << "  [config] rounds=" << kRounds << " seed=" << kSeed << "\n";
+
+    for (int round = 0; round < kRounds; ++round) {
+        TestHarness h(3);
+        harness_ptr = &h;
+
+        // Wait for initial leader
+        int leader = h.WaitForLeader(5000);
+        if (leader < 0) {
+            std::cerr << "  [round " << round << "] no initial leader\n";
+            total_invariant_violations++;
+            continue;
+        }
+
+        int prev_leader = leader;
+
+        // Random fault injection
+        std::uniform_int_distribution<int> action_dist(0, 4);
+        int action = action_dist(rng);
+
+        if (action == 0) {
+            // Isolate a random node
+            std::uniform_int_distribution<int> node_dist(0, 2);
+            int target = node_dist(rng);
+            h.GetFaults().IsolateNode(target);
+            total_partitions++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+            // Check if leader changed
+            int new_leader = h.WaitForLeader(3000);
+            if (new_leader >= 0 && new_leader != prev_leader) {
+                total_leader_switches++;
+            }
+
+            h.GetFaults().RestoreNode(target);
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        } else if (action == 1) {
+            // Set unreliable
+            h.GetFaults().SetUnreliable();
+            std::this_thread::sleep_for(std::chrono::milliseconds(300));
+            h.GetFaults().SetReliable();
+            std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        } else {
+            // Just wait and let the cluster stabilize
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
+
+        // Check invariants
+        std::string inv = h.CheckInvariants();
+        if (inv.find("OK") == std::string::npos) {
+            std::cerr << "  [round " << round << "] invariant violation: " << inv << "\n";
+            total_invariant_violations++;
+        }
+    }
+
+    std::cout << "  [metrics] leader_switches=" << total_leader_switches
+              << " partitions=" << total_partitions
+              << " violations=" << total_invariant_violations << "\n";
+
+    ASSERT_TRUE(total_invariant_violations == 0,
+        "invariant violations: " + std::to_string(total_invariant_violations));
+    return true;
+}
+
 int main() {
     std::cout << "=== Raft Correctness Tests ===\n\n";
 
@@ -694,6 +770,7 @@ int main() {
     RUN_TEST(TestSnapshotCrashRecovery);
     RUN_TEST(TestMultipleSnapshots);
     RUN_TEST(TestSnapshotDuringCrash);
+    RUN_TEST(TestRandomPerturbation);
 
     std::cout << "\n=== Results: " << g_passed << " passed, "
               << g_failed << " failed ===\n";
