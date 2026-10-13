@@ -683,20 +683,22 @@ bool TestSnapshotDuringCrash() {
 }
 
 // ---------------------------------------------------------------------------
-// Test: random perturbation — 200 rounds with fixed seed, collect metrics.
+// Test: random perturbation — 200 rounds with independent seeds, collect metrics.
 // ---------------------------------------------------------------------------
 bool TestRandomPerturbation() {
     const int kRounds = 200;
-    const unsigned int kSeed = 42;
-    std::mt19937 rng(kSeed);
+    const unsigned int kBaseSeed = 42;
 
     int total_leader_switches = 0;
     int total_partitions = 0;
     int total_invariant_violations = 0;
 
-    std::cout << "  [config] rounds=" << kRounds << " seed=" << kSeed << "\n";
+    std::cout << "  [config] rounds=" << kRounds << " base_seed=" << kBaseSeed << "\n";
 
     for (int round = 0; round < kRounds; ++round) {
+        // Each round uses an independent seed for statistical validity
+        std::mt19937 rng(kBaseSeed + round);
+
         TestHarness h(3);
         harness_ptr = &h;
 
